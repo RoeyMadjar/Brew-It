@@ -33,7 +33,11 @@ const sampleRecipes = [
 ]
 
 function App() {
-  const [recipes] = useState(sampleRecipes)
+  const [recipes, setRecipes] = useState(sampleRecipes)
+
+  function handleDelete(idToDelete) {
+    setRecipes(recipes.filter((recipe) => recipe.id !== idToDelete))
+  }
 
   return (
     <main className="app">
@@ -54,6 +58,9 @@ function App() {
             <p><strong>Yield:</strong> {recipe.yieldGrams} g</p>
             <p><strong>Rating:</strong> {recipe.rating} / 5</p>
             <p><strong>Tasting notes:</strong> {recipe.tastingNotes}</p>
+            <button type="button" onClick={() => handleDelete(recipe.id)}>
+              Delete
+            </button>
           </article>
         ))}
       </section>
