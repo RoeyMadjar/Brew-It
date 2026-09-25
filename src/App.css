@@ -4,3 +4,26 @@
   padding: 64px 16px;
   text-align: center;
 }
+
+.recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+  text-align: left;
+}
+
+.recipe-card {
+  padding: 16px 20px;
+  border: 1px solid #e0d6c8;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.recipe-card h2 {
+  margin-top: 0;
+}
+
+.recipe-card p {
+  margin: 4px 0;
+}
