@@ -32,17 +32,102 @@ const sampleRecipes = [
   },
 ]
 
+const emptyForm = {
+  name: '',
+  coffee: '',
+  method: '',
+  doseGrams: '',
+  waterGrams: '',
+  grindSize: '',
+  waterTempC: '',
+  brewTimeSeconds: '',
+  yieldGrams: '',
+  rating: '',
+  tastingNotes: '',
+}
+
 function App() {
   const [recipes, setRecipes] = useState(sampleRecipes)
+  const [formData, setFormData] = useState(emptyForm)
 
   function handleDelete(idToDelete) {
     setRecipes(recipes.filter((recipe) => recipe.id !== idToDelete))
+  }
+
+  function handleChange(event) {
+    setFormData({ ...formData, [event.target.name]: event.target.value })
+  }
+
+  function handleSubmit(event) {
+    event.preventDefault()
+    console.log('Collected recipe data:', formData)
   }
 
   return (
     <main className="app">
       <h1>Brew It</h1>
       <p>Your personal journal for saving and perfecting coffee brewing recipes.</p>
+
+      <form className="recipe-form" onSubmit={handleSubmit}>
+        <h2>Create Recipe</h2>
+
+        <label>
+          Name
+          <input type="text" name="name" value={formData.name} onChange={handleChange} />
+        </label>
+
+        <label>
+          Coffee
+          <input type="text" name="coffee" value={formData.coffee} onChange={handleChange} />
+        </label>
+
+        <label>
+          Method
+          <input type="text" name="method" value={formData.method} onChange={handleChange} />
+        </label>
+
+        <label>
+          Dose (g)
+          <input type="number" name="doseGrams" value={formData.doseGrams} onChange={handleChange} />
+        </label>
+
+        <label>
+          Water (g)
+          <input type="number" name="waterGrams" value={formData.waterGrams} onChange={handleChange} />
+        </label>
+
+        <label>
+          Grind size
+          <input type="text" name="grindSize" value={formData.grindSize} onChange={handleChange} />
+        </label>
+
+        <label>
+          Temperature (°C)
+          <input type="number" name="waterTempC" value={formData.waterTempC} onChange={handleChange} />
+        </label>
+
+        <label>
+          Brew time (seconds)
+          <input type="number" name="brewTimeSeconds" value={formData.brewTimeSeconds} onChange={handleChange} />
+        </label>
+
+        <label>
+          Yield (g)
+          <input type="number" name="yieldGrams" value={formData.yieldGrams} onChange={handleChange} />
+        </label>
+
+        <label>
+          Rating (1–5)
+          <input type="number" name="rating" min="1" max="5" value={formData.rating} onChange={handleChange} />
+        </label>
+
+        <label>
+          Tasting notes
+          <textarea name="tastingNotes" value={formData.tastingNotes} onChange={handleChange} />
+        </label>
+
+        <button type="submit">Save Recipe</button>
+      </form>
 
       <section className="recipe-list">
         {recipes.map((recipe) => (
