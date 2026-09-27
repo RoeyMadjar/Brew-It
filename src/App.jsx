@@ -60,7 +60,24 @@ function App() {
 
   function handleSubmit(event) {
     event.preventDefault()
-    console.log('Collected recipe data:', formData)
+
+    const newRecipe = {
+      id: crypto.randomUUID(),
+      name: formData.name,
+      coffee: formData.coffee,
+      method: formData.method,
+      doseGrams: Number(formData.doseGrams),
+      waterGrams: Number(formData.waterGrams),
+      grindSize: formData.grindSize,
+      waterTempC: Number(formData.waterTempC),
+      brewTimeSeconds: Number(formData.brewTimeSeconds),
+      yieldGrams: Number(formData.yieldGrams),
+      rating: Number(formData.rating),
+      tastingNotes: formData.tastingNotes,
+    }
+
+    setRecipes([...recipes, newRecipe])
+    setFormData(emptyForm)
   }
 
   return (
