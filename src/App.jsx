@@ -7,28 +7,40 @@ const sampleRecipes = [
     name: 'Morning V60',
     coffee: 'Ethiopia Yirgacheffe',
     method: 'V60',
-    doseGrams: 15,
-    waterGrams: 250,
-    grindSize: 'medium-fine',
-    waterTempC: 93,
-    brewTimeSeconds: 180,
-    yieldGrams: 220,
-    rating: 4,
-    tastingNotes: 'Bright and floral, slightly sour. Try a finer grind next time.',
+    versions: [
+      {
+        id: 'version-1',
+        createdAt: '2026-09-20T08:00:00.000Z',
+        doseGrams: 15,
+        waterGrams: 250,
+        grindSize: 'medium-fine',
+        waterTempC: 93,
+        brewTimeSeconds: 180,
+        yieldGrams: 220,
+        rating: 4,
+        tastingNotes: 'Bright and floral, slightly sour. Try a finer grind next time.',
+      },
+    ],
   },
   {
     id: 'recipe-2',
     name: 'Strong AeroPress',
     coffee: 'Colombia Huila',
     method: 'AeroPress',
-    doseGrams: 18,
-    waterGrams: 220,
-    grindSize: 'medium',
-    waterTempC: 88,
-    brewTimeSeconds: 120,
-    yieldGrams: 190,
-    rating: 5,
-    tastingNotes: 'Chocolatey and full-bodied. Keep this one.',
+    versions: [
+      {
+        id: 'version-2',
+        createdAt: '2026-09-21T09:30:00.000Z',
+        doseGrams: 18,
+        waterGrams: 220,
+        grindSize: 'medium',
+        waterTempC: 88,
+        brewTimeSeconds: 120,
+        yieldGrams: 190,
+        rating: 5,
+        tastingNotes: 'Chocolatey and full-bodied. Keep this one.',
+      },
+    ],
   },
 ]
 
@@ -66,14 +78,20 @@ function App() {
       name: formData.name,
       coffee: formData.coffee,
       method: formData.method,
-      doseGrams: Number(formData.doseGrams),
-      waterGrams: Number(formData.waterGrams),
-      grindSize: formData.grindSize,
-      waterTempC: Number(formData.waterTempC),
-      brewTimeSeconds: Number(formData.brewTimeSeconds),
-      yieldGrams: Number(formData.yieldGrams),
-      rating: Number(formData.rating),
-      tastingNotes: formData.tastingNotes,
+      versions: [
+        {
+          id: crypto.randomUUID(),
+          createdAt: new Date().toISOString(),
+          doseGrams: Number(formData.doseGrams),
+          waterGrams: Number(formData.waterGrams),
+          grindSize: formData.grindSize,
+          waterTempC: Number(formData.waterTempC),
+          brewTimeSeconds: Number(formData.brewTimeSeconds),
+          yieldGrams: Number(formData.yieldGrams),
+          rating: Number(formData.rating),
+          tastingNotes: formData.tastingNotes,
+        },
+      ],
     }
 
     setRecipes([...recipes, newRecipe])
@@ -147,24 +165,28 @@ function App() {
       </form>
 
       <section className="recipe-list">
-        {recipes.map((recipe) => (
-          <article key={recipe.id} className="recipe-card">
-            <h2>{recipe.name}</h2>
-            <p><strong>Coffee:</strong> {recipe.coffee}</p>
-            <p><strong>Method:</strong> {recipe.method}</p>
-            <p><strong>Dose:</strong> {recipe.doseGrams} g</p>
-            <p><strong>Water:</strong> {recipe.waterGrams} g</p>
-            <p><strong>Grind size:</strong> {recipe.grindSize}</p>
-            <p><strong>Temperature:</strong> {recipe.waterTempC} °C</p>
-            <p><strong>Brew time:</strong> {recipe.brewTimeSeconds} seconds</p>
-            <p><strong>Yield:</strong> {recipe.yieldGrams} g</p>
-            <p><strong>Rating:</strong> {recipe.rating} / 5</p>
-            <p><strong>Tasting notes:</strong> {recipe.tastingNotes}</p>
-            <button type="button" onClick={() => handleDelete(recipe.id)}>
-              Delete
-            </button>
-          </article>
-        ))}
+        {recipes.map((recipe) => {
+          const latestVersion = recipe.versions[recipe.versions.length - 1]
+
+          return (
+            <article key={recipe.id} className="recipe-card">
+              <h2>{recipe.name}</h2>
+              <p><strong>Coffee:</strong> {recipe.coffee}</p>
+              <p><strong>Method:</strong> {recipe.method}</p>
+              <p><strong>Dose:</strong> {latestVersion.doseGrams} g</p>
+              <p><strong>Water:</strong> {latestVersion.waterGrams} g</p>
+              <p><strong>Grind size:</strong> {latestVersion.grindSize}</p>
+              <p><strong>Temperature:</strong> {latestVersion.waterTempC} °C</p>
+              <p><strong>Brew time:</strong> {latestVersion.brewTimeSeconds} seconds</p>
+              <p><strong>Yield:</strong> {latestVersion.yieldGrams} g</p>
+              <p><strong>Rating:</strong> {latestVersion.rating} / 5</p>
+              <p><strong>Tasting notes:</strong> {latestVersion.tastingNotes}</p>
+              <button type="button" onClick={() => handleDelete(recipe.id)}>
+                Delete
+              </button>
+            </article>
+          )
+        })}
       </section>
     </main>
   )
