@@ -6,7 +6,7 @@ const sampleRecipes = [
   {
     id: "recipe-1",
     name: "Morning V60",
-    Bean: "Ethiopia Yirgacheffe",
+    bean: "Ethiopia Yirgacheffe",
     method: "V60",
     versions: [
       {
