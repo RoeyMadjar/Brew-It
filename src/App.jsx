@@ -24,26 +24,6 @@ const sampleRecipes = [
       },
     ],
   },
-  {
-    id: "recipe-2",
-    name: "Strong AeroPress",
-    bean: "Colombia Huila",
-    method: "AeroPress",
-    versions: [
-      {
-        id: "version-2",
-        createdAt: "2026-09-21T09:30:00.000Z",
-        doseGrams: 18,
-        waterGrams: 220,
-        grindSize: "medium",
-        waterTempC: 88,
-        brewTimeSeconds: 120,
-        yieldGrams: 190,
-        rating: 5,
-        tastingNotes: "Chocolatey and full-bodied. Keep this one.",
-      },
-    ],
-  },
 ];
 
 const emptyForm = {
@@ -60,8 +40,23 @@ const emptyForm = {
   tastingNotes: "",
 };
 
+function versionToFormValues(version) {
+  return {
+    doseGrams: String(version.doseGrams),
+    waterGrams: String(version.waterGrams),
+    grindSize: version.grindSize,
+    waterTempC: String(version.waterTempC),
+    brewTimeSeconds: String(version.brewTimeSeconds),
+    yieldGrams: String(version.yieldGrams),
+    rating: String(version.rating),
+    tastingNotes: version.tastingNotes,
+  };
+}
+
 function App() {
   const [recipes, setRecipes] = useState(sampleRecipes);
+  const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
+  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
 
   function handleDelete(idToDelete) {
     setRecipes(recipes.filter((recipe) => recipe.id !== idToDelete));
@@ -90,6 +85,32 @@ function App() {
     };
 
     setRecipes([...recipes, newRecipe]);
+    setIsCreateFormOpen(false);
+  }
+
+  function handleSaveNewVersion(recipeId, formData) {
+    const newVersion = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      doseGrams: Number(formData.doseGrams),
+      waterGrams: Number(formData.waterGrams),
+      grindSize: formData.grindSize,
+      waterTempC: Number(formData.waterTempC),
+      brewTimeSeconds: Number(formData.brewTimeSeconds),
+      yieldGrams: Number(formData.yieldGrams),
+      rating: Number(formData.rating),
+      tastingNotes: formData.tastingNotes,
+    };
+
+    setRecipes(
+      recipes.map((recipe) => {
+        if (recipe.id !== recipeId) {
+          return recipe;
+        }
+        return { ...recipe, versions: [...recipe.versions, newVersion] };
+      }),
+    );
+    setNewVersionRecipeId(null);
   }
 
   return (
@@ -99,12 +120,19 @@ function App() {
         Your personal journal for saving and perfecting coffee brewing recipes.
       </p>
 
-      <RecipeForm
-        title="Create Recipe"
-        submitLabel="Save Recipe"
-        initialValues={emptyForm}
-        onSave={handleCreateRecipe}
-      />
+      {isCreateFormOpen ? (
+        <RecipeForm
+          title="Create Recipe"
+          submitLabel="Save Recipe"
+          initialValues={emptyForm}
+          onSave={handleCreateRecipe}
+          onCancel={() => setIsCreateFormOpen(false)}
+        />
+      ) : (
+        <button type="button" onClick={() => setIsCreateFormOpen(true)}>
+          + Create Recipe
+        </button>
+      )}
 
       <section className="recipe-list">
         {recipes.map((recipe) => {
@@ -144,9 +172,30 @@ function App() {
               <p>
                 <strong>Tasting notes:</strong> {latestVersion.tastingNotes}
               </p>
-              <button type="button" onClick={() => handleDelete(recipe.id)}>
-                Delete
-              </button>
+              {newVersionRecipeId === recipe.id ? (
+                <RecipeForm
+                  title="New Version"
+                  submitLabel="Save Version"
+                  initialValues={versionToFormValues(latestVersion)}
+                  onSave={(formData) =>
+                    handleSaveNewVersion(recipe.id, formData)
+                  }
+                  onCancel={() => setNewVersionRecipeId(null)}
+                  showRecipeFields={false}
+                />
+              ) : (
+                <div className="card-actions">
+                  <button
+                    type="button"
+                    onClick={() => setNewVersionRecipeId(recipe.id)}
+                  >
+                    New Version
+                  </button>
+                  <button type="button" onClick={() => handleDelete(recipe.id)}>
+                    Delete
+                  </button>
+                </div>
+              )}
             </article>
           );
         })}

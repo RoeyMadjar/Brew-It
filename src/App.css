@@ -55,3 +55,13 @@
   font: inherit;
   padding: 6px 8px;
 }
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.recipe-form .ratio {
+  margin: 0;
+}

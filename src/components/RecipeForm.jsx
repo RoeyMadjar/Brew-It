@@ -1,6 +1,13 @@
 import { useState } from "react";
 
-function RecipeForm({ title, submitLabel, initialValues, onSave }) {
+function RecipeForm({
+  title,
+  submitLabel,
+  initialValues,
+  onSave,
+  onCancel,
+  showRecipeFields = true,
+}) {
   const [formData, setFormData] = useState(initialValues);
 
   function handleChange(event) {
@@ -13,39 +20,47 @@ function RecipeForm({ title, submitLabel, initialValues, onSave }) {
     setFormData(initialValues);
   }
 
+  const dose = Number(formData.doseGrams);
+  const water = Number(formData.waterGrams);
+  const ratio = dose > 0 && water > 0 ? `1:${(water / dose).toFixed(1)}` : null;
+
   return (
     <form className="recipe-form" onSubmit={handleSubmit}>
       <h2>{title}</h2>
 
-      <label>
-        Name
-        <input
-          type="text"
-          name="name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-      </label>
+      {showRecipeFields && (
+        <>
+          <label>
+            Name
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+            />
+          </label>
 
-      <label>
-        Bean
-        <input
-          type="text"
-          name="bean"
-          value={formData.bean}
-          onChange={handleChange}
-        />
-      </label>
+          <label>
+            Bean
+            <input
+              type="text"
+              name="bean"
+              value={formData.bean}
+              onChange={handleChange}
+            />
+          </label>
 
-      <label>
-        Method
-        <input
-          type="text"
-          name="method"
-          value={formData.method}
-          onChange={handleChange}
-        />
-      </label>
+          <label>
+            Method
+            <input
+              type="text"
+              name="method"
+              value={formData.method}
+              onChange={handleChange}
+            />
+          </label>
+        </>
+      )}
 
       <label>
         Dose (g)
@@ -66,6 +81,8 @@ function RecipeForm({ title, submitLabel, initialValues, onSave }) {
           onChange={handleChange}
         />
       </label>
+
+      {ratio && <p className="ratio">Ratio: {ratio}</p>}
 
       <label>
         Grind size
@@ -129,6 +146,11 @@ function RecipeForm({ title, submitLabel, initialValues, onSave }) {
       </label>
 
       <button type="submit">{submitLabel}</button>
+      {onCancel && (
+        <button type="button" onClick={onCancel}>
+          Cancel
+        </button>
+      )}
     </form>
   );
 }
