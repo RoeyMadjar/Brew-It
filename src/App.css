@@ -65,3 +65,17 @@
 .recipe-form .ratio {
   margin: 0;
 }
+
+.version-history {
+  margin-top: 16px;
+}
+
+.version-entry {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0d6c8;
+}
+
+.version-entry h3 {
+  margin: 0 0 4px;
+}

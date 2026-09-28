@@ -53,6 +53,13 @@ function versionToFormValues(version) {
   };
 }
 
+function formatDate(isoString) {
+  return new Date(isoString).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 function App() {
   const [recipes, setRecipes] = useState(sampleRecipes);
   const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
@@ -137,6 +144,7 @@ function App() {
       <section className="recipe-list">
         {recipes.map((recipe) => {
           const latestVersion = recipe.versions[recipe.versions.length - 1];
+          const previousVersions = recipe.versions.slice(0, -1).reverse();
 
           return (
             <article key={recipe.id} className="recipe-card">
@@ -196,6 +204,42 @@ function App() {
                   </button>
                 </div>
               )}
+              <details className="version-history">
+                <summary>Version History ({previousVersions.length})</summary>
+                {previousVersions.map((version, index) => (
+                  <div key={version.id} className="version-entry">
+                    <h3>Version {previousVersions.length - index}</h3>
+                    <p>
+                      <strong>Date:</strong> {formatDate(version.createdAt)}
+                    </p>
+                    <p>
+                      <strong>Dose:</strong> {version.doseGrams} g
+                    </p>
+                    <p>
+                      <strong>Water:</strong> {version.waterGrams} g
+                    </p>
+                    <p>
+                      <strong>Grind size:</strong> {version.grindSize}
+                    </p>
+                    <p>
+                      <strong>Temperature:</strong> {version.waterTempC} °C
+                    </p>
+                    <p>
+                      <strong>Brew time:</strong> {version.brewTimeSeconds}{" "}
+                      seconds
+                    </p>
+                    <p>
+                      <strong>Yield:</strong> {version.yieldGrams} g
+                    </p>
+                    <p>
+                      <strong>Rating:</strong> {version.rating} / 5
+                    </p>
+                    <p>
+                      <strong>Tasting notes:</strong> {version.tastingNotes}
+                    </p>
+                  </div>
+                ))}
+              </details>
             </article>
           );
         })}
