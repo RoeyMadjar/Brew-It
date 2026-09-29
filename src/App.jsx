@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import RecipeForm from "./components/RecipeForm.jsx";
 import "./App.css";
 
@@ -60,10 +60,28 @@ function formatDate(isoString) {
   });
 }
 
+const STORAGE_KEY = "brew-it-recipes";
+
+function loadRecipes() {
+  try {
+    const savedRecipes = localStorage.getItem(STORAGE_KEY);
+    if (savedRecipes === null) {
+      return sampleRecipes;
+    }
+    return JSON.parse(savedRecipes);
+  } catch {
+    return sampleRecipes;
+  }
+}
+
 function App() {
-  const [recipes, setRecipes] = useState(sampleRecipes);
+  const [recipes, setRecipes] = useState(loadRecipes);
   const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
+  }, [recipes]);
 
   function handleDelete(idToDelete) {
     setRecipes(recipes.filter((recipe) => recipe.id !== idToDelete));
