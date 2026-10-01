@@ -78,6 +78,7 @@ function App() {
   const [recipes, setRecipes] = useState(loadRecipes);
   const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  const [expandedRecipeId, setExpandedRecipeId] = useState(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
@@ -163,6 +164,11 @@ function App() {
         {recipes.map((recipe) => {
           const latestVersion = recipe.versions[recipe.versions.length - 1];
           const previousVersions = recipe.versions.slice(0, -1).reverse();
+          const isExpanded = expandedRecipeId === recipe.id;
+          const ratio =
+            latestVersion.doseGrams > 0 && latestVersion.waterGrams > 0
+              ? `1:${(latestVersion.waterGrams / latestVersion.doseGrams).toFixed(1)}`
+              : "—";
 
           return (
             <article key={recipe.id} className="recipe-card">
@@ -174,30 +180,37 @@ function App() {
                 <strong>Method:</strong> {recipe.method}
               </p>
               <p>
-                <strong>Dose:</strong> {latestVersion.doseGrams} g
-              </p>
-              <p>
-                <strong>Water:</strong> {latestVersion.waterGrams} g
-              </p>
-              <p>
-                <strong>Grind size:</strong> {latestVersion.grindSize}
-              </p>
-              <p>
-                <strong>Temperature:</strong> {latestVersion.waterTempC} °C
-              </p>
-              <p>
-                <strong>Brew time:</strong> {latestVersion.brewTimeSeconds}{" "}
-                seconds
-              </p>
-              <p>
-                <strong>Yield:</strong> {latestVersion.yieldGrams} g
-              </p>
-              <p>
                 <strong>Rating:</strong> {latestVersion.rating} / 5
               </p>
-              <p>
-                <strong>Tasting notes:</strong> {latestVersion.tastingNotes}
-              </p>
+              {isExpanded && (
+                <>
+                  <p>
+                    <strong>Dose:</strong> {latestVersion.doseGrams} g
+                  </p>
+                  <p>
+                    <strong>Water:</strong> {latestVersion.waterGrams} g
+                  </p>
+                  <p>
+                    <strong>Ratio:</strong> {ratio}
+                  </p>
+                  <p>
+                    <strong>Grind size:</strong> {latestVersion.grindSize}
+                  </p>
+                  <p>
+                    <strong>Temperature:</strong> {latestVersion.waterTempC} °C
+                  </p>
+                  <p>
+                    <strong>Brew time:</strong> {latestVersion.brewTimeSeconds}{" "}
+                    seconds
+                  </p>
+                  <p>
+                    <strong>Yield:</strong> {latestVersion.yieldGrams} g
+                  </p>
+                  <p>
+                    <strong>Tasting notes:</strong> {latestVersion.tastingNotes}
+                  </p>
+                </>
+              )}
               {newVersionRecipeId === recipe.id ? (
                 <RecipeForm
                   title="New Version"
@@ -213,9 +226,20 @@ function App() {
                 <div className="card-actions">
                   <button
                     type="button"
+                    onClick={() =>
+                      setExpandedRecipeId(isExpanded ? null : recipe.id)
+                    }
+                  >
+                    {isExpanded ? "Hide Recipe" : "View Recipe"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setNewVersionRecipeId(recipe.id)}
                   >
                     New Version
+                  </button>
+                  <button type="button" disabled>
+                    Edit
                   </button>
                   <button type="button" onClick={() => handleDelete(recipe.id)}>
                     Delete
