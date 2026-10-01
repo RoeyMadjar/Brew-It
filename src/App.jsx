@@ -79,6 +79,7 @@ function App() {
   const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
   const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
   const [expandedRecipeId, setExpandedRecipeId] = useState(null);
+  const [expandedVersionId, setExpandedVersionId] = useState(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
@@ -252,39 +253,72 @@ function App() {
                     version.doseGrams > 0 && version.waterGrams > 0
                       ? `1:${(version.waterGrams / version.doseGrams).toFixed(1)}`
                       : "—";
+                  const isVersionExpanded = expandedVersionId === version.id;
 
                   return (
                     <div key={version.id} className="version-entry">
                       <h3>Version {previousVersions.length - index}</h3>
                       <p>{formatDate(version.createdAt)}</p>
-                      <p>
-                        <strong>Dose:</strong> {version.doseGrams} g
-                      </p>
-                      <p>
-                        <strong>Water:</strong> {version.waterGrams} g
-                      </p>
-                      <p>
-                        <strong>Ratio:</strong> {versionRatio}
-                      </p>
-                      <p>
-                        <strong>Grind size:</strong> {version.grindSize}
-                      </p>
-                      <p>
-                        <strong>Temperature:</strong> {version.waterTempC} °C
-                      </p>
-                      <p>
-                        <strong>Brew time:</strong> {version.brewTimeSeconds}{" "}
-                        seconds
-                      </p>
-                      <p>
-                        <strong>Yield:</strong> {version.yieldGrams} g
-                      </p>
-                      <p>
-                        <strong>Rating:</strong> {version.rating} / 10
-                      </p>
-                      <p>
-                        <strong>Tasting notes:</strong> {version.tastingNotes}
-                      </p>
+                      {isVersionExpanded ? (
+                        <>
+                          <p>
+                            <strong>Dose:</strong> {version.doseGrams} g
+                          </p>
+                          <p>
+                            <strong>Water:</strong> {version.waterGrams} g
+                          </p>
+                          <p>
+                            <strong>Ratio:</strong> {versionRatio}
+                          </p>
+                          <p>
+                            <strong>Grind size:</strong> {version.grindSize}
+                          </p>
+                          <p>
+                            <strong>Temperature:</strong> {version.waterTempC}{" "}
+                            °C
+                          </p>
+                          <p>
+                            <strong>Brew time:</strong>{" "}
+                            {version.brewTimeSeconds} seconds
+                          </p>
+                          <p>
+                            <strong>Yield:</strong> {version.yieldGrams} g
+                          </p>
+                          <p>
+                            <strong>Rating:</strong> {version.rating} / 10
+                          </p>
+                          <p>
+                            <strong>Tasting notes:</strong>{" "}
+                            {version.tastingNotes}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="version-summary">
+                          <span>
+                            <strong>Dose:</strong> {version.doseGrams} g
+                          </span>
+                          <span>
+                            <strong>Yield:</strong> {version.yieldGrams} g
+                          </span>
+                          <span>
+                            <strong>Brew time:</strong>{" "}
+                            {version.brewTimeSeconds} seconds
+                          </span>
+                          <span>
+                            <strong>Rating:</strong> {version.rating} / 10
+                          </span>
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedVersionId(
+                            isVersionExpanded ? null : version.id,
+                          )
+                        }
+                      >
+                        {isVersionExpanded ? "Hide Version" : "View Version"}
+                      </button>
                     </div>
                   );
                 })}
