@@ -125,12 +125,13 @@ function RecipeForm({
       </label>
 
       <label>
-        Rating (1–5)
+        Rating (1–10)
         <input
           type="number"
           name="rating"
           min="1"
-          max="5"
+          max="10"
+          step="0.5"
           value={formData.rating}
           onChange={handleChange}
         />

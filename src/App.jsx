@@ -18,7 +18,7 @@ const sampleRecipes = [
         waterTempC: 93,
         brewTimeSeconds: 180,
         yieldGrams: 220,
-        rating: 4,
+        rating: 8,
         tastingNotes:
           "Bright and floral, slightly sour. Try a finer grind next time.",
       },
@@ -173,6 +173,7 @@ function App() {
           return (
             <article key={recipe.id} className="recipe-card">
               <h2>{recipe.name}</h2>
+              <p>{formatDate(latestVersion.createdAt)}</p>
               <p>
                 <strong>Bean:</strong> {recipe.bean}
               </p>
@@ -180,7 +181,7 @@ function App() {
                 <strong>Method:</strong> {recipe.method}
               </p>
               <p>
-                <strong>Rating:</strong> {latestVersion.rating} / 5
+                <strong>Rating:</strong> {latestVersion.rating} / 10
               </p>
               {isExpanded && (
                 <>
@@ -238,9 +239,7 @@ function App() {
                   >
                     New Version
                   </button>
-                  <button type="button" disabled>
-                    Edit
-                  </button>
+                  <button type="button">Edit</button>
                   <button type="button" onClick={() => handleDelete(recipe.id)}>
                     Delete
                   </button>
@@ -248,39 +247,47 @@ function App() {
               )}
               <details className="version-history">
                 <summary>Version History ({previousVersions.length})</summary>
-                {previousVersions.map((version, index) => (
-                  <div key={version.id} className="version-entry">
-                    <h3>Version {previousVersions.length - index}</h3>
-                    <p>
-                      <strong>Date:</strong> {formatDate(version.createdAt)}
-                    </p>
-                    <p>
-                      <strong>Dose:</strong> {version.doseGrams} g
-                    </p>
-                    <p>
-                      <strong>Water:</strong> {version.waterGrams} g
-                    </p>
-                    <p>
-                      <strong>Grind size:</strong> {version.grindSize}
-                    </p>
-                    <p>
-                      <strong>Temperature:</strong> {version.waterTempC} °C
-                    </p>
-                    <p>
-                      <strong>Brew time:</strong> {version.brewTimeSeconds}{" "}
-                      seconds
-                    </p>
-                    <p>
-                      <strong>Yield:</strong> {version.yieldGrams} g
-                    </p>
-                    <p>
-                      <strong>Rating:</strong> {version.rating} / 5
-                    </p>
-                    <p>
-                      <strong>Tasting notes:</strong> {version.tastingNotes}
-                    </p>
-                  </div>
-                ))}
+                {previousVersions.map((version, index) => {
+                  const versionRatio =
+                    version.doseGrams > 0 && version.waterGrams > 0
+                      ? `1:${(version.waterGrams / version.doseGrams).toFixed(1)}`
+                      : "—";
+
+                  return (
+                    <div key={version.id} className="version-entry">
+                      <h3>Version {previousVersions.length - index}</h3>
+                      <p>{formatDate(version.createdAt)}</p>
+                      <p>
+                        <strong>Dose:</strong> {version.doseGrams} g
+                      </p>
+                      <p>
+                        <strong>Water:</strong> {version.waterGrams} g
+                      </p>
+                      <p>
+                        <strong>Ratio:</strong> {versionRatio}
+                      </p>
+                      <p>
+                        <strong>Grind size:</strong> {version.grindSize}
+                      </p>
+                      <p>
+                        <strong>Temperature:</strong> {version.waterTempC} °C
+                      </p>
+                      <p>
+                        <strong>Brew time:</strong> {version.brewTimeSeconds}{" "}
+                        seconds
+                      </p>
+                      <p>
+                        <strong>Yield:</strong> {version.yieldGrams} g
+                      </p>
+                      <p>
+                        <strong>Rating:</strong> {version.rating} / 10
+                      </p>
+                      <p>
+                        <strong>Tasting notes:</strong> {version.tastingNotes}
+                      </p>
+                    </div>
+                  );
+                })}
               </details>
             </article>
           );
