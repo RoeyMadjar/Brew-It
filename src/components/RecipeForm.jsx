@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 
 function RecipeForm({
   title,
@@ -7,8 +7,11 @@ function RecipeForm({
   onSave,
   onCancel,
   showRecipeFields = true,
+  showBrewTimeUnit = false,
 }) {
   const [formData, setFormData] = useState(initialValues);
+  const brewTimeId = useId();
+  const isMinutes = formData.brewTimeUnit === "minutes";
 
   function handleChange(event) {
     setFormData({ ...formData, [event.target.name]: event.target.value });
@@ -104,15 +107,33 @@ function RecipeForm({
         />
       </label>
 
-      <label>
-        Brew time (seconds)
+      <div className="brew-time-field">
+        <div className="brew-time-header">
+          <label htmlFor={brewTimeId}>
+            Brew time
+            {!showBrewTimeUnit && (isMinutes ? " (min)" : " (sec)")}
+          </label>
+          {showBrewTimeUnit && (
+            <select
+              aria-label="Brew time unit"
+              name="brewTimeUnit"
+              value={formData.brewTimeUnit}
+              onChange={handleChange}
+            >
+              <option value="seconds">sec</option>
+              <option value="minutes">min</option>
+            </select>
+          )}
+        </div>
         <input
+          id={brewTimeId}
           type="number"
-          name="brewTimeSeconds"
-          value={formData.brewTimeSeconds}
+          name="brewTime"
+          step={isMinutes ? "any" : undefined}
+          value={formData.brewTime}
           onChange={handleChange}
         />
-      </label>
+      </div>
 
       <label>
         Yield (g)

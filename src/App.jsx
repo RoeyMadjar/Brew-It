@@ -34,19 +34,43 @@ const emptyForm = {
   waterGrams: "",
   grindSize: "",
   waterTempC: "",
-  brewTimeSeconds: "",
+  brewTime: "",
+  brewTimeUnit: "seconds",
   yieldGrams: "",
   rating: "",
   tastingNotes: "",
 };
 
+function secondsToMinutes(seconds) {
+  return Number((seconds / 60).toFixed(2));
+}
+
+// Versions saved before brewTimeUnit existed have no unit: treat them as seconds.
+function formatBrewTime(version) {
+  if ((version.brewTimeUnit ?? "seconds") === "minutes") {
+    return `${secondsToMinutes(version.brewTimeSeconds)} min`;
+  }
+  return `${version.brewTimeSeconds} sec`;
+}
+
+function formToBrewTimeSeconds(formData) {
+  const multiplier = formData.brewTimeUnit === "minutes" ? 60 : 1;
+  return Math.round(Number(formData.brewTime) * multiplier);
+}
+
 function versionToFormValues(version) {
+  const brewTimeUnit = version.brewTimeUnit ?? "seconds";
+
   return {
     doseGrams: String(version.doseGrams),
     waterGrams: String(version.waterGrams),
     grindSize: version.grindSize,
     waterTempC: String(version.waterTempC),
-    brewTimeSeconds: String(version.brewTimeSeconds),
+    brewTime:
+      brewTimeUnit === "minutes"
+        ? String(secondsToMinutes(version.brewTimeSeconds))
+        : String(version.brewTimeSeconds),
+    brewTimeUnit,
     yieldGrams: String(version.yieldGrams),
     rating: String(version.rating),
     tastingNotes: version.tastingNotes,
@@ -103,7 +127,8 @@ function App() {
           waterGrams: Number(formData.waterGrams),
           grindSize: formData.grindSize,
           waterTempC: Number(formData.waterTempC),
-          brewTimeSeconds: Number(formData.brewTimeSeconds),
+          brewTimeSeconds: formToBrewTimeSeconds(formData),
+          brewTimeUnit: formData.brewTimeUnit,
           yieldGrams: Number(formData.yieldGrams),
           rating: Number(formData.rating),
           tastingNotes: formData.tastingNotes,
@@ -123,7 +148,8 @@ function App() {
       waterGrams: Number(formData.waterGrams),
       grindSize: formData.grindSize,
       waterTempC: Number(formData.waterTempC),
-      brewTimeSeconds: Number(formData.brewTimeSeconds),
+      brewTimeSeconds: formToBrewTimeSeconds(formData),
+      brewTimeUnit: formData.brewTimeUnit,
       yieldGrams: Number(formData.yieldGrams),
       rating: Number(formData.rating),
       tastingNotes: formData.tastingNotes,
@@ -154,6 +180,7 @@ function App() {
           initialValues={emptyForm}
           onSave={handleCreateRecipe}
           onCancel={() => setIsCreateFormOpen(false)}
+          showBrewTimeUnit
         />
       ) : (
         <button type="button" onClick={() => setIsCreateFormOpen(true)}>
@@ -202,8 +229,7 @@ function App() {
                     <strong>Temperature:</strong> {latestVersion.waterTempC} °C
                   </p>
                   <p>
-                    <strong>Brew time:</strong> {latestVersion.brewTimeSeconds}{" "}
-                    seconds
+                    <strong>Brew time:</strong> {formatBrewTime(latestVersion)}
                   </p>
                   <p>
                     <strong>Yield:</strong> {latestVersion.yieldGrams} g
@@ -279,7 +305,7 @@ function App() {
                           </p>
                           <p>
                             <strong>Brew time:</strong>{" "}
-                            {version.brewTimeSeconds} seconds
+                            {formatBrewTime(version)}
                           </p>
                           <p>
                             <strong>Yield:</strong> {version.yieldGrams} g
@@ -302,7 +328,7 @@ function App() {
                           </span>
                           <span>
                             <strong>Brew time:</strong>{" "}
-                            {version.brewTimeSeconds} seconds
+                            {formatBrewTime(version)}
                           </span>
                           <span>
                             <strong>Rating:</strong> {version.rating} / 10

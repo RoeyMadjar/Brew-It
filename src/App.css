@@ -56,6 +56,23 @@
   padding: 6px 8px;
 }
 
+.brew-time-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.brew-time-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brew-time-header select {
+  font: inherit;
+  padding: 2px 4px;
+}
+
 .card-actions {
   display: flex;
   gap: 8px;
