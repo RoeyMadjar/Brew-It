@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import RecipeForm from "./components/RecipeForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
-import { secondsToMinutes } from "./utils/format.js";
+import {
+  formToVersionFields,
+  versionToFormValues,
+} from "./utils/versionForm.js";
 import "./App.css";
 
 const sampleRecipes = [
@@ -44,30 +47,6 @@ const emptyForm = {
   tastingNotes: "",
 };
 
-function formToBrewTimeSeconds(formData) {
-  const multiplier = formData.brewTimeUnit === "minutes" ? 60 : 1;
-  return Math.round(Number(formData.brewTime) * multiplier);
-}
-
-function versionToFormValues(version) {
-  const brewTimeUnit = version.brewTimeUnit ?? "seconds";
-
-  return {
-    doseGrams: String(version.doseGrams),
-    waterGrams: String(version.waterGrams),
-    grindSize: version.grindSize,
-    waterTempC: String(version.waterTempC),
-    brewTime:
-      brewTimeUnit === "minutes"
-        ? String(secondsToMinutes(version.brewTimeSeconds))
-        : String(version.brewTimeSeconds),
-    brewTimeUnit,
-    yieldGrams: String(version.yieldGrams),
-    rating: String(version.rating),
-    tastingNotes: version.tastingNotes,
-  };
-}
-
 function formatDate(isoString) {
   return new Date(isoString).toLocaleString(undefined, {
     dateStyle: "medium",
@@ -91,8 +70,8 @@ function loadRecipes() {
 
 function App() {
   const [recipes, setRecipes] = useState(loadRecipes);
-  const [newVersionRecipeId, setNewVersionRecipeId] = useState(null);
-  const [isCreateFormOpen, setIsCreateFormOpen] = useState(false);
+  // Only one form is open at a time: null, or { type, recipeId?, versionId? }.
+  const [activeForm, setActiveForm] = useState(null);
   const [expandedRecipeId, setExpandedRecipeId] = useState(null);
   const [expandedVersionId, setExpandedVersionId] = useState(null);
 
@@ -142,36 +121,20 @@ function App() {
         {
           id: crypto.randomUUID(),
           createdAt: new Date().toISOString(),
-          doseGrams: Number(formData.doseGrams),
-          waterGrams: Number(formData.waterGrams),
-          grindSize: formData.grindSize,
-          waterTempC: Number(formData.waterTempC),
-          brewTimeSeconds: formToBrewTimeSeconds(formData),
-          brewTimeUnit: formData.brewTimeUnit,
-          yieldGrams: Number(formData.yieldGrams),
-          rating: Number(formData.rating),
-          tastingNotes: formData.tastingNotes,
+          ...formToVersionFields(formData),
         },
       ],
     };
 
     setRecipes([...recipes, newRecipe]);
-    setIsCreateFormOpen(false);
+    setActiveForm(null);
   }
 
   function handleSaveNewVersion(recipeId, formData) {
     const newVersion = {
       id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
-      doseGrams: Number(formData.doseGrams),
-      waterGrams: Number(formData.waterGrams),
-      grindSize: formData.grindSize,
-      waterTempC: Number(formData.waterTempC),
-      brewTimeSeconds: formToBrewTimeSeconds(formData),
-      brewTimeUnit: formData.brewTimeUnit,
-      yieldGrams: Number(formData.yieldGrams),
-      rating: Number(formData.rating),
-      tastingNotes: formData.tastingNotes,
+      ...formToVersionFields(formData),
     };
 
     setRecipes(
@@ -182,7 +145,51 @@ function App() {
         return { ...recipe, versions: [...recipe.versions, newVersion] };
       }),
     );
-    setNewVersionRecipeId(null);
+    setActiveForm(null);
+  }
+
+  // Edits never add versions: map keeps the same versions in the same order,
+  // and spreading the old version first keeps its id and createdAt.
+  function handleSaveRecipeEdit(recipeId, formData) {
+    setRecipes(
+      recipes.map((recipe) => {
+        if (recipe.id !== recipeId) {
+          return recipe;
+        }
+        const lastIndex = recipe.versions.length - 1;
+        return {
+          ...recipe,
+          name: formData.name,
+          bean: formData.bean,
+          method: formData.method,
+          versions: recipe.versions.map((version, index) =>
+            index === lastIndex
+              ? { ...version, ...formToVersionFields(formData) }
+              : version,
+          ),
+        };
+      }),
+    );
+    setActiveForm(null);
+  }
+
+  function handleSaveVersionEdit(recipeId, versionId, formData) {
+    setRecipes(
+      recipes.map((recipe) => {
+        if (recipe.id !== recipeId) {
+          return recipe;
+        }
+        return {
+          ...recipe,
+          versions: recipe.versions.map((version) =>
+            version.id === versionId
+              ? { ...version, ...formToVersionFields(formData) }
+              : version,
+          ),
+        };
+      }),
+    );
+    setActiveForm(null);
   }
 
   return (
@@ -192,17 +199,17 @@ function App() {
         Your personal journal for saving and perfecting coffee brewing recipes.
       </p>
 
-      {isCreateFormOpen ? (
+      {activeForm?.type === "create" ? (
         <RecipeForm
           title="Create Recipe"
           submitLabel="Save Recipe"
           initialValues={emptyForm}
           onSave={handleCreateRecipe}
-          onCancel={() => setIsCreateFormOpen(false)}
+          onCancel={() => setActiveForm(null)}
           showBrewTimeUnit
         />
       ) : (
-        <button type="button" onClick={() => setIsCreateFormOpen(true)}>
+        <button type="button" onClick={() => setActiveForm({ type: "create" })}>
           + Create Recipe
         </button>
       )}
@@ -212,6 +219,12 @@ function App() {
           const latestVersion = recipe.versions[recipe.versions.length - 1];
           const previousVersions = recipe.versions.slice(0, -1).reverse();
           const isExpanded = expandedRecipeId === recipe.id;
+          const isNewVersionOpen =
+            activeForm?.type === "newVersion" &&
+            activeForm.recipeId === recipe.id;
+          const isEditRecipeOpen =
+            activeForm?.type === "editRecipe" &&
+            activeForm.recipeId === recipe.id;
 
           return (
             <article key={recipe.id} className="recipe-card">
@@ -228,16 +241,35 @@ function App() {
               ) : (
                 <VersionSummary version={latestVersion} />
               )}
-              {newVersionRecipeId === recipe.id ? (
+              {/* Both forms share this spot, so key forces a fresh form when switching. */}
+              {isNewVersionOpen ? (
                 <RecipeForm
+                  key="newVersion"
                   title="New Version"
                   submitLabel="Save Version"
                   initialValues={versionToFormValues(latestVersion)}
                   onSave={(formData) =>
                     handleSaveNewVersion(recipe.id, formData)
                   }
-                  onCancel={() => setNewVersionRecipeId(null)}
+                  onCancel={() => setActiveForm(null)}
                   showRecipeFields={false}
+                />
+              ) : isEditRecipeOpen ? (
+                <RecipeForm
+                  key="editRecipe"
+                  title="Edit Recipe"
+                  submitLabel="Save Changes"
+                  initialValues={{
+                    name: recipe.name,
+                    bean: recipe.bean,
+                    method: recipe.method,
+                    ...versionToFormValues(latestVersion),
+                  }}
+                  onSave={(formData) =>
+                    handleSaveRecipeEdit(recipe.id, formData)
+                  }
+                  onCancel={() => setActiveForm(null)}
+                  showBrewTimeUnit
                 />
               ) : (
                 <div className="card-actions">
@@ -251,11 +283,20 @@ function App() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => setNewVersionRecipeId(recipe.id)}
+                    onClick={() =>
+                      setActiveForm({ type: "newVersion", recipeId: recipe.id })
+                    }
                   >
                     New Version
                   </button>
-                  <button type="button">Edit</button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setActiveForm({ type: "editRecipe", recipeId: recipe.id })
+                    }
+                  >
+                    Edit
+                  </button>
                   <button type="button" onClick={() => handleDelete(recipe.id)}>
                     Delete
                   </button>
@@ -264,37 +305,74 @@ function App() {
               <details className="version-history">
                 <summary>Version History ({previousVersions.length})</summary>
                 {previousVersions.map((version, index) => {
+                  const versionNumber = previousVersions.length - index;
                   const isVersionExpanded = expandedVersionId === version.id;
+                  const isEditVersionOpen =
+                    activeForm?.type === "editVersion" &&
+                    activeForm.versionId === version.id;
 
                   return (
                     <div key={version.id} className="version-entry">
-                      <h3>Version {previousVersions.length - index}</h3>
+                      <h3>Version {versionNumber}</h3>
                       <p>{formatDate(version.createdAt)}</p>
                       {isVersionExpanded ? (
                         <VersionDetails version={version} />
                       ) : (
                         <VersionSummary version={version} />
                       )}
-                      <div className="version-actions">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setExpandedVersionId(
-                              isVersionExpanded ? null : version.id,
+                      {isEditVersionOpen ? (
+                        <RecipeForm
+                          key={version.id}
+                          title={`Edit Version ${versionNumber}`}
+                          submitLabel="Save Changes"
+                          initialValues={versionToFormValues(version)}
+                          onSave={(formData) =>
+                            handleSaveVersionEdit(
+                              recipe.id,
+                              version.id,
+                              formData,
                             )
                           }
-                        >
-                          {isVersionExpanded ? "Hide Version" : "View Version"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleDeleteVersion(recipe.id, version.id)
-                          }
-                        >
-                          Delete
-                        </button>
-                      </div>
+                          onCancel={() => setActiveForm(null)}
+                          showRecipeFields={false}
+                          showBrewTimeUnit
+                        />
+                      ) : (
+                        <div className="version-actions">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setExpandedVersionId(
+                                isVersionExpanded ? null : version.id,
+                              )
+                            }
+                          >
+                            {isVersionExpanded
+                              ? "Hide Version"
+                              : "View Version"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setActiveForm({
+                                type: "editVersion",
+                                recipeId: recipe.id,
+                                versionId: version.id,
+                              })
+                            }
+                          >
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteVersion(recipe.id, version.id)
+                            }
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
