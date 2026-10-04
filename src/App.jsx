@@ -110,7 +110,35 @@ function App() {
   }, [recipes]);
 
   function handleDelete(idToDelete) {
+    if (!window.confirm("Delete this recipe? This can't be undone.")) {
+      return;
+    }
+
     setRecipes(recipes.filter((recipe) => recipe.id !== idToDelete));
+  }
+
+  function handleDeleteVersion(recipeId, versionId) {
+    if (!window.confirm("Delete this version? This can't be undone.")) {
+      return;
+    }
+
+    setRecipes(
+      recipes.map((recipe) => {
+        if (recipe.id !== recipeId) {
+          return recipe;
+        }
+        return {
+          ...recipe,
+          versions: recipe.versions.filter(
+            (version) => version.id !== versionId,
+          ),
+        };
+      }),
+    );
+
+    if (expandedVersionId === versionId) {
+      setExpandedVersionId(null);
+    }
   }
 
   function handleCreateRecipe(formData) {
@@ -335,16 +363,26 @@ function App() {
                           </span>
                         </p>
                       )}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpandedVersionId(
-                            isVersionExpanded ? null : version.id,
-                          )
-                        }
-                      >
-                        {isVersionExpanded ? "Hide Version" : "View Version"}
-                      </button>
+                      <div className="version-actions">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setExpandedVersionId(
+                              isVersionExpanded ? null : version.id,
+                            )
+                          }
+                        >
+                          {isVersionExpanded ? "Hide Version" : "View Version"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleDeleteVersion(recipe.id, version.id)
+                          }
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   );
                 })}

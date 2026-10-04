@@ -108,6 +108,8 @@
   margin-right: 8px;
 }
 
-.version-entry button {
+.version-actions {
+  display: flex;
+  gap: 8px;
   margin-top: 8px;
 }
