@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import RecipeForm from "./components/RecipeForm.jsx";
+import VersionDetails from "./components/VersionDetails.jsx";
+import VersionSummary from "./components/VersionSummary.jsx";
+import { secondsToMinutes } from "./utils/format.js";
 import "./App.css";
 
 const sampleRecipes = [
@@ -40,18 +43,6 @@ const emptyForm = {
   rating: "",
   tastingNotes: "",
 };
-
-function secondsToMinutes(seconds) {
-  return Number((seconds / 60).toFixed(2));
-}
-
-// Versions saved before brewTimeUnit existed have no unit: treat them as seconds.
-function formatBrewTime(version) {
-  if ((version.brewTimeUnit ?? "seconds") === "minutes") {
-    return `${secondsToMinutes(version.brewTimeSeconds)} min`;
-  }
-  return `${version.brewTimeSeconds} sec`;
-}
 
 function formToBrewTimeSeconds(formData) {
   const multiplier = formData.brewTimeUnit === "minutes" ? 60 : 1;
@@ -221,10 +212,6 @@ function App() {
           const latestVersion = recipe.versions[recipe.versions.length - 1];
           const previousVersions = recipe.versions.slice(0, -1).reverse();
           const isExpanded = expandedRecipeId === recipe.id;
-          const ratio =
-            latestVersion.doseGrams > 0 && latestVersion.waterGrams > 0
-              ? `1:${(latestVersion.waterGrams / latestVersion.doseGrams).toFixed(1)}`
-              : "—";
 
           return (
             <article key={recipe.id} className="recipe-card">
@@ -236,36 +223,10 @@ function App() {
               <p>
                 <strong>Method:</strong> {recipe.method}
               </p>
-              <p>
-                <strong>Rating:</strong> {latestVersion.rating} / 10
-              </p>
-              {isExpanded && (
-                <>
-                  <p>
-                    <strong>Dose:</strong> {latestVersion.doseGrams} g
-                  </p>
-                  <p>
-                    <strong>Water:</strong> {latestVersion.waterGrams} g
-                  </p>
-                  <p>
-                    <strong>Ratio:</strong> {ratio}
-                  </p>
-                  <p>
-                    <strong>Grind size:</strong> {latestVersion.grindSize}
-                  </p>
-                  <p>
-                    <strong>Temperature:</strong> {latestVersion.waterTempC} °C
-                  </p>
-                  <p>
-                    <strong>Brew time:</strong> {formatBrewTime(latestVersion)}
-                  </p>
-                  <p>
-                    <strong>Yield:</strong> {latestVersion.yieldGrams} g
-                  </p>
-                  <p>
-                    <strong>Tasting notes:</strong> {latestVersion.tastingNotes}
-                  </p>
-                </>
+              {isExpanded ? (
+                <VersionDetails version={latestVersion} />
+              ) : (
+                <VersionSummary version={latestVersion} />
               )}
               {newVersionRecipeId === recipe.id ? (
                 <RecipeForm
@@ -303,10 +264,6 @@ function App() {
               <details className="version-history">
                 <summary>Version History ({previousVersions.length})</summary>
                 {previousVersions.map((version, index) => {
-                  const versionRatio =
-                    version.doseGrams > 0 && version.waterGrams > 0
-                      ? `1:${(version.waterGrams / version.doseGrams).toFixed(1)}`
-                      : "—";
                   const isVersionExpanded = expandedVersionId === version.id;
 
                   return (
@@ -314,54 +271,9 @@ function App() {
                       <h3>Version {previousVersions.length - index}</h3>
                       <p>{formatDate(version.createdAt)}</p>
                       {isVersionExpanded ? (
-                        <>
-                          <p>
-                            <strong>Dose:</strong> {version.doseGrams} g
-                          </p>
-                          <p>
-                            <strong>Water:</strong> {version.waterGrams} g
-                          </p>
-                          <p>
-                            <strong>Ratio:</strong> {versionRatio}
-                          </p>
-                          <p>
-                            <strong>Grind size:</strong> {version.grindSize}
-                          </p>
-                          <p>
-                            <strong>Temperature:</strong> {version.waterTempC}{" "}
-                            °C
-                          </p>
-                          <p>
-                            <strong>Brew time:</strong>{" "}
-                            {formatBrewTime(version)}
-                          </p>
-                          <p>
-                            <strong>Yield:</strong> {version.yieldGrams} g
-                          </p>
-                          <p>
-                            <strong>Rating:</strong> {version.rating} / 10
-                          </p>
-                          <p>
-                            <strong>Tasting notes:</strong>{" "}
-                            {version.tastingNotes}
-                          </p>
-                        </>
+                        <VersionDetails version={version} />
                       ) : (
-                        <p className="version-summary">
-                          <span>
-                            <strong>Dose:</strong> {version.doseGrams} g
-                          </span>
-                          <span>
-                            <strong>Yield:</strong> {version.yieldGrams} g
-                          </span>
-                          <span>
-                            <strong>Brew time:</strong>{" "}
-                            {formatBrewTime(version)}
-                          </span>
-                          <span>
-                            <strong>Rating:</strong> {version.rating} / 10
-                          </span>
-                        </p>
+                        <VersionSummary version={version} />
                       )}
                       <div className="version-actions">
                         <button
