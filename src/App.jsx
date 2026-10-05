@@ -223,7 +223,9 @@ function App() {
           return (
             <article key={recipe.id} className="recipe-card">
               <h2>{recipe.name}</h2>
-              <p>{formatDate(latestVersion.createdAt)}</p>
+              <p className="version-date">
+                {formatDate(latestVersion.createdAt)}
+              </p>
               <p>
                 <strong>Bean:</strong> {recipe.bean}
               </p>
@@ -308,7 +310,9 @@ function App() {
                   return (
                     <div key={version.id} className="version-entry">
                       <h3>Version {versionNumber}</h3>
-                      <p>{formatDate(version.createdAt)}</p>
+                      <p className="version-date">
+                        {formatDate(version.createdAt)}
+                      </p>
                       {isVersionExpanded ? (
                         <VersionDetails
                           version={version}

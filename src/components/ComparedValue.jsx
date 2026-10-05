@@ -8,7 +8,7 @@ function ComparedValue({ version, compareTo, isChanged, format }) {
   return (
     <>
       <mark className="changed-value">{format(version)}</mark>{" "}
-      <span className="now-value">(now {format(compareTo)})</span>
+      <span className="now-value">now {format(compareTo)}</span>
     </>
   );
 }

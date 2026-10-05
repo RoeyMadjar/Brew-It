@@ -12,9 +12,21 @@ export function secondsToMinutes(seconds) {
 // Versions saved before brewTimeUnit existed have no unit: treat them as seconds.
 export function formatBrewTime(version) {
   if ((version.brewTimeUnit ?? "seconds") === "minutes") {
-    return `${secondsToMinutes(version.brewTimeSeconds)} min`;
+    return `${secondsToMinutes(version.brewTimeSeconds)}min`;
   }
-  return `${version.brewTimeSeconds} sec`;
+  return `${version.brewTimeSeconds}s`;
+}
+
+export function formatGrams(grams) {
+  return `${grams}g`;
+}
+
+export function formatTemp(celsius) {
+  return `${celsius}°C`;
+}
+
+export function formatRating(rating) {
+  return `${rating}/10`;
 }
 
 export function formatRatio(version) {
