@@ -103,9 +103,23 @@
   gap: 4px 8px;
 }
 
-.version-summary span + span::before {
+.version-summary > span + span::before {
   content: "·";
   margin-right: 8px;
+}
+
+/* Pale amber: dark text on it is ~10.7:1 contrast. */
+.changed-value {
+  background-color: #fde9b8;
+  color: inherit;
+  font-weight: 700;
+  padding: 0 4px;
+  border-radius: 3px;
+}
+
+/* Muted warm grey: ~5.7:1 on the white card. */
+.now-value {
+  color: #6f6461;
 }
 
 .version-actions {

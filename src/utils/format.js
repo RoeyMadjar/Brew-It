@@ -1,3 +1,10 @@
+export function formatDate(isoString) {
+  return new Date(isoString).toLocaleString(undefined, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
+
 export function secondsToMinutes(seconds) {
   return Number((seconds / 60).toFixed(2));
 }

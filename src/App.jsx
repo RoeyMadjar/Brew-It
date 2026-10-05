@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import RecipeForm from "./components/RecipeForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
+import { formatDate } from "./utils/format.js";
 import {
   formToVersionFields,
   versionToFormValues,
@@ -46,13 +47,6 @@ const emptyForm = {
   rating: "",
   tastingNotes: "",
 };
-
-function formatDate(isoString) {
-  return new Date(isoString).toLocaleString(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-}
 
 const STORAGE_KEY = "brew-it-recipes";
 
@@ -316,9 +310,15 @@ function App() {
                       <h3>Version {versionNumber}</h3>
                       <p>{formatDate(version.createdAt)}</p>
                       {isVersionExpanded ? (
-                        <VersionDetails version={version} />
+                        <VersionDetails
+                          version={version}
+                          compareTo={latestVersion}
+                        />
                       ) : (
-                        <VersionSummary version={version} />
+                        <VersionSummary
+                          version={version}
+                          compareTo={latestVersion}
+                        />
                       )}
                       {isEditVersionOpen ? (
                         <RecipeForm
