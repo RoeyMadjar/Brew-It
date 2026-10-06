@@ -90,7 +90,6 @@
 /* Edit mode: the ring (box-shadow) thickens the border without moving content. */
 .recipe-card.editing {
   border-color: #b5793a;
-  box-shadow: 0 0 0 1px #b5793a;
 }
 
 /* Border ~3.3:1 on white so the inputs are clearly visible. */
@@ -99,8 +98,7 @@
 .recipe-edit-form textarea {
   box-sizing: border-box;
   font: inherit;
-  padding: 2px 4px;
-  border: 1px solid #a08b74;
+  border: none;
   border-radius: 4px;
   background-color: #fff8ec;
 }
