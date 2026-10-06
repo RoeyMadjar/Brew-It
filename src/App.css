@@ -87,12 +87,12 @@
   margin-top: 12px;
 }
 
-/* Edit mode: the ring (box-shadow) thickens the border without moving content. */
+/* Edit mode: an amber card border shows the card is editable. */
 .recipe-card.editing {
   border-color: #b5793a;
 }
 
-/* Border ~3.3:1 on white so the inputs are clearly visible. */
+/* Borderless inputs: the pale warm background marks the editable fields. */
 .recipe-edit-form input,
 .recipe-edit-form select,
 .recipe-edit-form textarea {
