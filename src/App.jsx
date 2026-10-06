@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import RecipeEditForm from "./components/RecipeEditForm.jsx";
 import RecipeForm from "./components/RecipeForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
@@ -73,7 +74,51 @@ function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
   }, [recipes]);
 
+  // Only one edit at a time: while one is open, other actions just remind
+  // the user to finish it. Returns true when the action should stop.
+  function blockIfEditing() {
+    if (
+      activeForm?.type !== "editRecipe" &&
+      activeForm?.type !== "editVersion"
+    ) {
+      return false;
+    }
+    const editedRecipe = recipes.find(
+      (recipe) => recipe.id === activeForm.recipeId,
+    );
+    window.alert(`Save changes in ${editedRecipe.name}?`);
+    return true;
+  }
+
+  function openForm(form) {
+    if (blockIfEditing()) {
+      return;
+    }
+    setActiveForm(form);
+  }
+
+  // Edit always shows the expanded card; wasExpanded lets Cancel undo that.
+  function handleStartRecipeEdit(recipeId, isExpanded) {
+    if (blockIfEditing()) {
+      return;
+    }
+    setActiveForm({ type: "editRecipe", recipeId, wasExpanded: isExpanded });
+    setExpandedRecipeId(recipeId);
+  }
+
+  // Only collapse if this card is still the expanded one (another card may
+  // have been opened while editing).
+  function handleCancelRecipeEdit(recipeId) {
+    if (!activeForm.wasExpanded && expandedRecipeId === recipeId) {
+      setExpandedRecipeId(null);
+    }
+    setActiveForm(null);
+  }
+
   function handleDelete(idToDelete) {
+    if (blockIfEditing()) {
+      return;
+    }
     if (!window.confirm("Delete this recipe? This can't be undone.")) {
       return;
     }
@@ -82,6 +127,9 @@ function App() {
   }
 
   function handleDeleteVersion(recipeId, versionId) {
+    if (blockIfEditing()) {
+      return;
+    }
     if (!window.confirm("Delete this version? This can't be undone.")) {
       return;
     }
@@ -165,6 +213,7 @@ function App() {
       }),
     );
     setActiveForm(null);
+    setExpandedRecipeId(recipeId);
   }
 
   function handleSaveVersionEdit(recipeId, versionId, formData) {
@@ -203,7 +252,7 @@ function App() {
           showBrewTimeUnit
         />
       ) : (
-        <button type="button" onClick={() => setActiveForm({ type: "create" })}>
+        <button type="button" onClick={() => openForm({ type: "create" })}>
           + Create Recipe
         </button>
       )}
@@ -221,40 +270,16 @@ function App() {
             activeForm.recipeId === recipe.id;
 
           return (
-            <article key={recipe.id} className="recipe-card">
-              <h2>{recipe.name}</h2>
-              <p className="version-date">
-                {formatDate(latestVersion.createdAt)}
-              </p>
-              <p>
-                <strong>Bean:</strong> {recipe.bean}
-              </p>
-              <p>
-                <strong>Method:</strong> {recipe.method}
-              </p>
-              {isExpanded ? (
-                <VersionDetails version={latestVersion} />
-              ) : (
-                <VersionSummary version={latestVersion} />
-              )}
-              {/* Both forms share this spot, so key forces a fresh form when switching. */}
-              {isNewVersionOpen ? (
-                <RecipeForm
-                  key="newVersion"
-                  title="New Version"
-                  submitLabel="Save Version"
-                  initialValues={versionToFormValues(latestVersion)}
-                  onSave={(formData) =>
-                    handleSaveNewVersion(recipe.id, formData)
-                  }
-                  onCancel={() => setActiveForm(null)}
-                  showRecipeFields={false}
-                />
-              ) : isEditRecipeOpen ? (
-                <RecipeForm
+            <article
+              key={recipe.id}
+              className={
+                isEditRecipeOpen ? "recipe-card editing" : "recipe-card"
+              }
+            >
+              {/* Edit mode replaces everything above Version History. */}
+              {isEditRecipeOpen ? (
+                <RecipeEditForm
                   key="editRecipe"
-                  title="Edit Recipe"
-                  submitLabel="Save Changes"
                   initialValues={{
                     name: recipe.name,
                     bean: recipe.bean,
@@ -264,39 +289,73 @@ function App() {
                   onSave={(formData) =>
                     handleSaveRecipeEdit(recipe.id, formData)
                   }
-                  onCancel={() => setActiveForm(null)}
-                  showBrewTimeUnit
+                  onCancel={() => handleCancelRecipeEdit(recipe.id)}
+                  subtitle={formatDate(latestVersion.createdAt)}
                 />
               ) : (
-                <div className="card-actions">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setExpandedRecipeId(isExpanded ? null : recipe.id)
-                    }
-                  >
-                    {isExpanded ? "Hide Recipe" : "View Recipe"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveForm({ type: "newVersion", recipeId: recipe.id })
-                    }
-                  >
-                    New Version
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setActiveForm({ type: "editRecipe", recipeId: recipe.id })
-                    }
-                  >
-                    Edit
-                  </button>
-                  <button type="button" onClick={() => handleDelete(recipe.id)}>
-                    Delete
-                  </button>
-                </div>
+                <>
+                  <h2>{recipe.name}</h2>
+                  <p className="version-date">
+                    {formatDate(latestVersion.createdAt)}
+                  </p>
+                  <p>
+                    <strong>Bean:</strong> {recipe.bean}
+                  </p>
+                  <p>
+                    <strong>Method:</strong> {recipe.method}
+                  </p>
+                  {isExpanded ? (
+                    <VersionDetails version={latestVersion} />
+                  ) : (
+                    <VersionSummary version={latestVersion} />
+                  )}
+                  {isNewVersionOpen ? (
+                    <RecipeForm
+                      key="newVersion"
+                      title="New Version"
+                      submitLabel="Save Version"
+                      initialValues={versionToFormValues(latestVersion)}
+                      onSave={(formData) =>
+                        handleSaveNewVersion(recipe.id, formData)
+                      }
+                      onCancel={() => setActiveForm(null)}
+                      showRecipeFields={false}
+                    />
+                  ) : (
+                    <div className="card-actions">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedRecipeId(isExpanded ? null : recipe.id)
+                        }
+                      >
+                        {isExpanded ? "Hide Recipe" : "View Recipe"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          openForm({ type: "newVersion", recipeId: recipe.id })
+                        }
+                      >
+                        New Version
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleStartRecipeEdit(recipe.id, isExpanded)
+                        }
+                      >
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(recipe.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
               <details className="version-history">
                 <summary>Version History ({previousVersions.length})</summary>
@@ -358,7 +417,7 @@ function App() {
                           <button
                             type="button"
                             onClick={() =>
-                              setActiveForm({
+                              openForm({
                                 type: "editVersion",
                                 recipeId: recipe.id,
                                 versionId: version.id,

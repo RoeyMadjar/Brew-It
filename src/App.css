@@ -87,6 +87,47 @@
   margin-top: 12px;
 }
 
+/* Edit mode: the ring (box-shadow) thickens the border without moving content. */
+.recipe-card.editing {
+  border-color: #b5793a;
+  box-shadow: 0 0 0 1px #b5793a;
+}
+
+/* Border ~3.3:1 on white so the inputs are clearly visible. */
+.recipe-edit-form input,
+.recipe-edit-form select,
+.recipe-edit-form textarea {
+  box-sizing: border-box;
+  font: inherit;
+  padding: 2px 4px;
+  border: 1px solid #a08b74;
+  border-radius: 4px;
+  background-color: #fff8ec;
+}
+
+/* Inputs fill their grid column instead of their default ~20ch width. */
+.recipe-edit-form .version-grid input,
+.recipe-edit-form textarea {
+  width: 100%;
+}
+
+.recipe-edit-form .edit-name {
+  width: 100%;
+  margin-bottom: 2px;
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.recipe-edit-form .brew-time-input {
+  display: flex;
+  gap: 4px;
+}
+
+.recipe-edit-form .brew-time-input input {
+  flex: 1;
+  min-width: 0;
+}
+
 .recipe-form .ratio {
   margin: 0;
 }
