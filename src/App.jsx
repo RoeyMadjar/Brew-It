@@ -84,7 +84,7 @@ function App() {
       return false;
     }
     const editedRecipe = recipes.find(
-      (recipe) => recipe.id === activeForm.recipeId
+      (recipe) => recipe.id === activeForm.recipeId,
     );
     window.alert(`Save / Cancel changes in ${editedRecipe.name} first.`);
     return true;
@@ -142,10 +142,10 @@ function App() {
         return {
           ...recipe,
           versions: recipe.versions.filter(
-            (version) => version.id !== versionId
+            (version) => version.id !== versionId,
           ),
         };
-      })
+      }),
     );
 
     if (expandedVersionId === versionId) {
@@ -185,7 +185,7 @@ function App() {
           return recipe;
         }
         return { ...recipe, versions: [...recipe.versions, newVersion] };
-      })
+      }),
     );
     setActiveForm(null);
   }
@@ -207,10 +207,10 @@ function App() {
           versions: recipe.versions.map((version, index) =>
             index === lastIndex
               ? { ...version, ...formToVersionFields(formData) }
-              : version
+              : version,
           ),
         };
-      })
+      }),
     );
     setActiveForm(null);
     setExpandedRecipeId(recipeId);
@@ -227,10 +227,10 @@ function App() {
           versions: recipe.versions.map((version) =>
             version.id === versionId
               ? { ...version, ...formToVersionFields(formData) }
-              : version
+              : version,
           ),
         };
-      })
+      }),
     );
     setActiveForm(null);
   }
@@ -393,7 +393,7 @@ function App() {
                             handleSaveVersionEdit(
                               recipe.id,
                               version.id,
-                              formData
+                              formData,
                             )
                           }
                           onCancel={() => setActiveForm(null)}
@@ -406,7 +406,7 @@ function App() {
                             type="button"
                             onClick={() =>
                               setExpandedVersionId(
-                                isVersionExpanded ? null : version.id
+                                isVersionExpanded ? null : version.id,
                               )
                             }
                           >
