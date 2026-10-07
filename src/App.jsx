@@ -65,7 +65,8 @@ function loadRecipes() {
 
 function App() {
   const [recipes, setRecipes] = useState(loadRecipes);
-  // Only one form is open at a time: null, or { type, recipeId?, versionId? }.
+  // Only one form is open at a time: null, or
+  // { type, recipeId?, versionId?, wasExpanded? }.
   const [activeForm, setActiveForm] = useState(null);
   const [expandedRecipeId, setExpandedRecipeId] = useState(null);
   const [expandedVersionId, setExpandedVersionId] = useState(null);
