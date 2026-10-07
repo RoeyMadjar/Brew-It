@@ -23,12 +23,19 @@ function RecipeForm({
     setFormData(initialValues);
   }
 
+  // Blur a number input on wheel so scrolling moves the page, not the value.
+  function handleWheel(event) {
+    if (event.target.type === "number") {
+      event.target.blur();
+    }
+  }
+
   const dose = Number(formData.doseGrams);
   const water = Number(formData.waterGrams);
   const ratio = dose > 0 && water > 0 ? `1:${(water / dose).toFixed(1)}` : null;
 
   return (
-    <form className="recipe-form" onSubmit={handleSubmit}>
+    <form className="recipe-form" onSubmit={handleSubmit} onWheel={handleWheel}>
       <h2>{title}</h2>
 
       {showRecipeFields && (

@@ -64,6 +64,17 @@
   padding: 6px 8px;
 }
 
+/* Hide the up/down spinner arrows on number inputs (all forms). */
+input[type="number"] {
+  appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
 .brew-time-field {
   display: flex;
   flex-direction: column;

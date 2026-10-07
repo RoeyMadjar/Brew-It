@@ -23,8 +23,19 @@ function RecipeEditForm({
     onSave(formData);
   }
 
+  // Blur a number input on wheel so scrolling moves the page, not the value.
+  function handleWheel(event) {
+    if (event.target.type === "number") {
+      event.target.blur();
+    }
+  }
+
   return (
-    <form className="recipe-edit-form" onSubmit={handleSubmit}>
+    <form
+      className="recipe-edit-form"
+      onSubmit={handleSubmit}
+      onWheel={handleWheel}
+    >
       {showRecipeFields && (
         <input
           className="edit-name"
@@ -170,7 +181,7 @@ function RecipeEditForm({
         </div>
         <div className="version-field">
           <dt>
-            <label htmlFor={`${id}-temp`}>Temperature (°C)</label>
+            <label htmlFor={`${id}-temp`}>Temp (°C)</label>
           </dt>
           <dd>
             <input
