@@ -9,6 +9,7 @@ function RecipeEditForm({
   onCancel,
   subtitle,
   showRecipeFields = true,
+  submitLabel = "Save Changes",
 }) {
   const [formData, setFormData] = useState(initialValues);
   const id = useId();
@@ -210,7 +211,7 @@ function RecipeEditForm({
       </dl>
 
       <div className="card-actions">
-        <button type="submit">Save Changes</button>
+        <button type="submit">{submitLabel}</button>
         <button type="button" onClick={onCancel}>
           Cancel
         </button>

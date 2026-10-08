@@ -1,14 +1,6 @@
 import { useId, useState } from "react";
 
-function RecipeForm({
-  title,
-  submitLabel,
-  initialValues,
-  onSave,
-  onCancel,
-  showRecipeFields = true,
-  showBrewTimeUnit = false,
-}) {
+function RecipeForm({ title, submitLabel, initialValues, onSave, onCancel }) {
   const [formData, setFormData] = useState(initialValues);
   const brewTimeId = useId();
   const isMinutes = formData.brewTimeUnit === "minutes";
@@ -38,39 +30,35 @@ function RecipeForm({
     <form className="recipe-form" onSubmit={handleSubmit} onWheel={handleWheel}>
       <h2>{title}</h2>
 
-      {showRecipeFields && (
-        <>
-          <label>
-            Name
-            <input
-              type="text"
-              name="name"
-              value={formData.name}
-              onChange={handleChange}
-            />
-          </label>
+      <label>
+        Name
+        <input
+          type="text"
+          name="name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+      </label>
 
-          <label>
-            Bean
-            <input
-              type="text"
-              name="bean"
-              value={formData.bean}
-              onChange={handleChange}
-            />
-          </label>
+      <label>
+        Bean
+        <input
+          type="text"
+          name="bean"
+          value={formData.bean}
+          onChange={handleChange}
+        />
+      </label>
 
-          <label>
-            Method
-            <input
-              type="text"
-              name="method"
-              value={formData.method}
-              onChange={handleChange}
-            />
-          </label>
-        </>
-      )}
+      <label>
+        Method
+        <input
+          type="text"
+          name="method"
+          value={formData.method}
+          onChange={handleChange}
+        />
+      </label>
 
       <label>
         Dose (g)
@@ -116,21 +104,16 @@ function RecipeForm({
 
       <div className="brew-time-field">
         <div className="brew-time-header">
-          <label htmlFor={brewTimeId}>
-            Brew time
-            {!showBrewTimeUnit && (isMinutes ? " (min)" : " (sec)")}
-          </label>
-          {showBrewTimeUnit && (
-            <select
-              aria-label="Brew time unit"
-              name="brewTimeUnit"
-              value={formData.brewTimeUnit}
-              onChange={handleChange}
-            >
-              <option value="seconds">sec</option>
-              <option value="minutes">min</option>
-            </select>
-          )}
+          <label htmlFor={brewTimeId}>Brew time</label>
+          <select
+            aria-label="Brew time unit"
+            name="brewTimeUnit"
+            value={formData.brewTimeUnit}
+            onChange={handleChange}
+          >
+            <option value="seconds">sec</option>
+            <option value="minutes">min</option>
+          </select>
         </div>
         <input
           id={brewTimeId}
