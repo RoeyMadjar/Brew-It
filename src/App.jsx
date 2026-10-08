@@ -13,22 +13,21 @@ import "./App.css";
 const sampleRecipes = [
   {
     id: "recipe-1",
-    name: "Morning V60",
-    bean: "Ethiopia Yirgacheffe",
-    method: "V60",
+    name: "Morning Coffee",
+    bean: "San Rafael",
+    method: "Espresso",
     versions: [
       {
         id: "version-1",
         createdAt: "2026-09-20T08:00:00.000Z",
-        doseGrams: 15,
-        waterGrams: 250,
-        grindSize: "medium-fine",
+        doseGrams: 16,
+        waterGrams: 40,
+        grindSize: "fine",
         waterTempC: 93,
-        brewTimeSeconds: 180,
-        yieldGrams: 220,
+        brewTimeSeconds: 28,
+        yieldGrams: 40,
         rating: 8,
-        tastingNotes:
-          "Bright and floral, slightly sour. Try a finer grind next time.",
+        tastingNotes: "Balanced, bitter notes, a bit sour, nice finish.",
       },
     ],
   },
