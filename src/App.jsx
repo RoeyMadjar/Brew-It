@@ -87,7 +87,18 @@ function App() {
     const editedRecipe = recipes.find(
       (recipe) => recipe.id === activeForm.recipeId,
     );
-    window.alert(`Save / Cancel changes in ${editedRecipe.name} first.`);
+    // Version numbers count from the oldest version (Version 1).
+    const editedName =
+      activeForm.type === "editVersion"
+        ? `Version ${
+            editedRecipe.versions.findIndex(
+              (version) => version.id === activeForm.versionId,
+            ) + 1
+          }`
+        : editedRecipe.name;
+    window.alert(
+      `Save / Cancel changes in ${editedName} of ${editedRecipe.name} recipe first.`,
+    );
     return true;
   }
 
@@ -112,6 +123,27 @@ function App() {
   function handleCancelRecipeEdit(recipeId) {
     if (!activeForm.wasExpanded && expandedRecipeId === recipeId) {
       setExpandedRecipeId(null);
+    }
+    setActiveForm(null);
+  }
+
+  // Same pattern as the recipe edit, using expandedVersionId.
+  function handleStartVersionEdit(recipeId, versionId, isVersionExpanded) {
+    if (blockIfEditing()) {
+      return;
+    }
+    setActiveForm({
+      type: "editVersion",
+      recipeId,
+      versionId,
+      wasExpanded: isVersionExpanded,
+    });
+    setExpandedVersionId(versionId);
+  }
+
+  function handleCancelVersionEdit(versionId) {
+    if (!activeForm.wasExpanded && expandedVersionId === versionId) {
+      setExpandedVersionId(null);
     }
     setActiveForm(null);
   }
@@ -234,6 +266,7 @@ function App() {
       }),
     );
     setActiveForm(null);
+    setExpandedVersionId(versionId);
   }
 
   return (
@@ -268,6 +301,9 @@ function App() {
             activeForm.recipeId === recipe.id;
           const isEditRecipeOpen =
             activeForm?.type === "editRecipe" &&
+            activeForm.recipeId === recipe.id;
+          const isEditingVersionHere =
+            activeForm?.type === "editVersion" &&
             activeForm.recipeId === recipe.id;
 
           return (
@@ -359,36 +395,39 @@ function App() {
                 </>
               )}
               <details className="version-history">
-                <summary>Version History ({previousVersions.length})</summary>
+                {/* preventDefault stops <details> from closing while one of
+                    its versions is being edited. */}
+                <summary
+                  onClick={(event) => {
+                    if (isEditingVersionHere) {
+                      event.preventDefault();
+                      blockIfEditing();
+                    }
+                  }}
+                >
+                  Version History ({previousVersions.length})
+                </summary>
                 {previousVersions.map((version, index) => {
                   const versionNumber = previousVersions.length - index;
                   const isVersionExpanded = expandedVersionId === version.id;
                   const isEditVersionOpen =
-                    activeForm?.type === "editVersion" &&
-                    activeForm.versionId === version.id;
+                    isEditingVersionHere && activeForm.versionId === version.id;
 
                   return (
-                    <div key={version.id} className="version-entry">
+                    <div
+                      key={version.id}
+                      className={
+                        isEditVersionOpen
+                          ? "version-entry editing"
+                          : "version-entry"
+                      }
+                    >
                       <h3>Version {versionNumber}</h3>
                       <p className="version-date">
                         {formatDate(version.createdAt)}
                       </p>
-                      {isVersionExpanded ? (
-                        <VersionDetails
-                          version={version}
-                          compareTo={latestVersion}
-                        />
-                      ) : (
-                        <VersionSummary
-                          version={version}
-                          compareTo={latestVersion}
-                        />
-                      )}
                       {isEditVersionOpen ? (
-                        <RecipeForm
-                          key={version.id}
-                          title={`Edit Version ${versionNumber}`}
-                          submitLabel="Save Changes"
+                        <RecipeEditForm
                           initialValues={versionToFormValues(version)}
                           onSave={(formData) =>
                             handleSaveVersionEdit(
@@ -397,45 +436,57 @@ function App() {
                               formData,
                             )
                           }
-                          onCancel={() => setActiveForm(null)}
+                          onCancel={() => handleCancelVersionEdit(version.id)}
                           showRecipeFields={false}
-                          showBrewTimeUnit
                         />
                       ) : (
-                        <div className="version-actions">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setExpandedVersionId(
-                                isVersionExpanded ? null : version.id,
-                              )
-                            }
-                          >
-                            {isVersionExpanded
-                              ? "Hide Version"
-                              : "View Version"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              openForm({
-                                type: "editVersion",
-                                recipeId: recipe.id,
-                                versionId: version.id,
-                              })
-                            }
-                          >
-                            Edit
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleDeleteVersion(recipe.id, version.id)
-                            }
-                          >
-                            Delete
-                          </button>
-                        </div>
+                        <>
+                          {isVersionExpanded ? (
+                            <VersionDetails
+                              version={version}
+                              compareTo={latestVersion}
+                            />
+                          ) : (
+                            <VersionSummary
+                              version={version}
+                              compareTo={latestVersion}
+                            />
+                          )}
+                          <div className="version-actions">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setExpandedVersionId(
+                                  isVersionExpanded ? null : version.id,
+                                )
+                              }
+                            >
+                              {isVersionExpanded
+                                ? "Hide Version"
+                                : "View Version"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleStartVersionEdit(
+                                  recipe.id,
+                                  version.id,
+                                  isVersionExpanded,
+                                )
+                              }
+                            >
+                              Edit
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteVersion(recipe.id, version.id)
+                              }
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </>
                       )}
                     </div>
                   );

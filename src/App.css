@@ -151,6 +151,13 @@ input[type="number"]::-webkit-outer-spin-button {
   border-top: 1px solid #e0d6c8;
 }
 
+/* Same amber border as an edited card; padding keeps content off it. */
+.version-entry.editing {
+  padding: 12px;
+  border: 1px solid #b5793a;
+  border-radius: 8px;
+}
+
 .version-entry h3 {
   margin: 0 0 2px;
 }
