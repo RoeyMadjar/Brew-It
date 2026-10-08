@@ -212,7 +212,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* Pale amber: dark text on it is ~10.7:1 contrast. */
 .changed-value {
-  background-color: #fde9b8;
+  background-color: #ffd46b;
   color: inherit;
   font-weight: 700;
   padding: 0 4px;
