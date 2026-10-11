@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import RecipeEditForm from "./components/RecipeEditForm.jsx";
-import RecipeForm from "./components/RecipeForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
 import { formatDate } from "./utils/format.js";
+import { getRecipeCreatedAt } from "./utils/recipe.js";
 import {
   formToVersionFields,
   versionToFormValues,
@@ -78,11 +78,17 @@ function App() {
   // the user to finish it. Returns true when the action should stop.
   function blockIfEditing() {
     if (
+      activeForm?.type !== "create" &&
       activeForm?.type !== "editRecipe" &&
       activeForm?.type !== "editVersion" &&
       activeForm?.type !== "newVersion"
     ) {
       return false;
+    }
+    // Create has no recipeId yet, so it's handled before the lookup.
+    if (activeForm.type === "create") {
+      window.alert("Save / Cancel the new recipe first.");
+      return true;
     }
     const editedRecipe = recipes.find(
       (recipe) => recipe.id === activeForm.recipeId,
@@ -202,15 +208,17 @@ function App() {
   }
 
   function handleCreateRecipe(formData) {
+    const createdAt = new Date().toISOString();
     const newRecipe = {
       id: crypto.randomUUID(),
+      createdAt,
       name: formData.name,
       bean: formData.bean,
       method: formData.method,
       versions: [
         {
           id: crypto.randomUUID(),
-          createdAt: new Date().toISOString(),
+          createdAt,
           ...formToVersionFields(formData),
         },
       ],
@@ -285,6 +293,12 @@ function App() {
     setExpandedVersionId(versionId);
   }
 
+  // Newest first. Sort a copy so the recipes state is never mutated;
+  // ISO dates compare correctly as plain strings.
+  const sortedRecipes = recipes
+    .slice()
+    .sort((a, b) => getRecipeCreatedAt(b).localeCompare(getRecipeCreatedAt(a)));
+
   return (
     <main className="app">
       <h1>Brew It</h1>
@@ -292,22 +306,26 @@ function App() {
         Your personal journal for saving and perfecting coffee brewing recipes.
       </p>
 
-      {activeForm?.type === "create" ? (
-        <RecipeForm
-          title="Create Recipe"
-          submitLabel="Save Recipe"
-          initialValues={emptyForm}
-          onSave={handleCreateRecipe}
-          onCancel={() => setActiveForm(null)}
-        />
-      ) : (
+      {activeForm?.type !== "create" && (
         <button type="button" onClick={() => openForm({ type: "create" })}>
-          + Create Recipe
+          Create Recipe
         </button>
       )}
 
       <section className="recipe-list">
-        {recipes.map((recipe) => {
+        {activeForm?.type === "create" && (
+          <article className="recipe-card editing">
+            <RecipeEditForm
+              key="create"
+              initialValues={emptyForm}
+              onSave={handleCreateRecipe}
+              onCancel={() => setActiveForm(null)}
+              subtitle={formatDate(new Date().toISOString())}
+              submitLabel="Save Recipe"
+            />
+          </article>
+        )}
+        {sortedRecipes.map((recipe) => {
           const latestVersion = recipe.versions[recipe.versions.length - 1];
           const previousVersions = recipe.versions.slice(0, -1).reverse();
           const isExpanded = expandedRecipeId === recipe.id;

@@ -31,9 +31,15 @@ function RecipeEditForm({
     }
   }
 
+  // Recipe-level forms (Create, Edit Recipe) get darker inputs than
+  // version-level ones (New Version, Edit Version).
   return (
     <form
-      className="recipe-edit-form"
+      className={
+        showRecipeFields
+          ? "recipe-edit-form recipe-level-form"
+          : "recipe-edit-form"
+      }
       onSubmit={handleSubmit}
       onWheel={handleWheel}
     >
@@ -43,6 +49,7 @@ function RecipeEditForm({
           type="text"
           name="name"
           aria-label="Recipe name"
+          placeholder="Recipe's name"
           value={formData.name}
           onChange={handleChange}
         />

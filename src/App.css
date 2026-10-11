@@ -36,34 +36,6 @@
   color: #6f6461;
 }
 
-.recipe-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 32px;
-  padding: 16px 20px;
-  border: 1px solid #e0d6c8;
-  border-radius: 8px;
-  background-color: #fff;
-  text-align: left;
-}
-
-.recipe-form h2 {
-  margin: 0;
-}
-
-.recipe-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.recipe-form input,
-.recipe-form textarea {
-  font: inherit;
-  padding: 6px 8px;
-}
-
 /* Hide the up/down spinner arrows on number inputs (all forms). */
 input[type="number"] {
   appearance: textfield;
@@ -73,23 +45,6 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
-}
-
-.brew-time-field {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.brew-time-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.brew-time-header select {
-  font: inherit;
-  padding: 2px 4px;
 }
 
 .card-actions {
@@ -114,6 +69,14 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: #fff8ec;
 }
 
+/* Recipe-level forms (Create, Edit Recipe): darker sand inputs set them
+   apart from version forms. Dark text on it is ~10:1. */
+.recipe-level-form input,
+.recipe-level-form select,
+.recipe-level-form textarea {
+  background-color: #f3dfc1;
+}
+
 /* Inputs fill their grid column instead of their default ~20ch width. */
 .recipe-edit-form .version-grid input,
 .recipe-edit-form textarea {
@@ -135,10 +98,6 @@ input[type="number"]::-webkit-outer-spin-button {
 .recipe-edit-form .brew-time-input input {
   flex: 1;
   min-width: 0;
-}
-
-.recipe-form .ratio {
-  margin: 0;
 }
 
 /* Warm tint and frame set past versions apart from the current recipe.
@@ -210,7 +169,7 @@ input[type="number"]::-webkit-outer-spin-button {
   }
 }
 
-/* Pale amber: dark text on it is ~10.7:1 contrast. */
+/* Salomie color for highlighting diffs: dark text on it is ~9:1 contrast. */
 .changed-value {
   background-color: #ffd46b;
   color: inherit;
