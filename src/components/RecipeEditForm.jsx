@@ -16,12 +16,24 @@ function RecipeEditForm({
   const isMinutes = formData.brewTimeUnit === "minutes";
 
   function handleChange(event) {
+    // Every text input is required: block whitespace-only values too.
+    if (event.target.type === "text") {
+      event.target.setCustomValidity(
+        event.target.value.trim() === "" ? "Please fill out this field." : "",
+      );
+    }
     setFormData({ ...formData, [event.target.name]: event.target.value });
   }
 
   function handleSubmit(event) {
     event.preventDefault();
-    onSave(formData);
+    const trimmedData = Object.fromEntries(
+      Object.entries(formData).map(([key, value]) => [
+        key,
+        typeof value === "string" ? value.trim() : value,
+      ]),
+    );
+    onSave(trimmedData);
   }
 
   // Blur a number input on wheel so scrolling moves the page, not the value.
@@ -50,6 +62,7 @@ function RecipeEditForm({
           name="name"
           aria-label="Recipe name"
           placeholder="Recipe's name"
+          required
           value={formData.name}
           onChange={handleChange}
         />
@@ -63,6 +76,7 @@ function RecipeEditForm({
               <input
                 type="text"
                 name="bean"
+                required
                 value={formData.bean}
                 onChange={handleChange}
               />
@@ -74,6 +88,7 @@ function RecipeEditForm({
               <input
                 type="text"
                 name="method"
+                required
                 value={formData.method}
                 onChange={handleChange}
               />
@@ -92,6 +107,9 @@ function RecipeEditForm({
               id={`${id}-dose`}
               type="number"
               name="doseGrams"
+              required
+              min="0"
+              step="any"
               value={formData.doseGrams}
               onChange={handleChange}
             />
@@ -106,6 +124,7 @@ function RecipeEditForm({
               id={`${id}-yield`}
               type="number"
               name="yieldGrams"
+              step="any"
               value={formData.yieldGrams}
               onChange={handleChange}
             />
@@ -164,6 +183,7 @@ function RecipeEditForm({
               id={`${id}-grind`}
               type="text"
               name="grindSize"
+              required
               value={formData.grindSize}
               onChange={handleChange}
             />
@@ -178,6 +198,7 @@ function RecipeEditForm({
               id={`${id}-water`}
               type="number"
               name="waterGrams"
+              step="any"
               value={formData.waterGrams}
               onChange={handleChange}
             />
@@ -196,6 +217,7 @@ function RecipeEditForm({
               id={`${id}-temp`}
               type="number"
               name="waterTempC"
+              step="any"
               value={formData.waterTempC}
               onChange={handleChange}
             />

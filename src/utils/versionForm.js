@@ -1,6 +1,18 @@
 import { secondsToMinutes } from "./format.js";
 
+// Empty optional numbers are stored as null, not 0 (0 would look measured).
+function toNumberOrNull(value) {
+  return value === "" ? null : Number(value);
+}
+
+function toFormString(value) {
+  return value === null ? "" : String(value);
+}
+
 function formToBrewTimeSeconds(formData) {
+  if (formData.brewTime === "") {
+    return null;
+  }
   const multiplier = formData.brewTimeUnit === "minutes" ? 60 : 1;
   return Math.round(Number(formData.brewTime) * multiplier);
 }
@@ -9,13 +21,13 @@ function formToBrewTimeSeconds(formData) {
 export function formToVersionFields(formData) {
   return {
     doseGrams: Number(formData.doseGrams),
-    waterGrams: Number(formData.waterGrams),
+    waterGrams: toNumberOrNull(formData.waterGrams),
     grindSize: formData.grindSize,
-    waterTempC: Number(formData.waterTempC),
+    waterTempC: toNumberOrNull(formData.waterTempC),
     brewTimeSeconds: formToBrewTimeSeconds(formData),
     brewTimeUnit: formData.brewTimeUnit,
-    yieldGrams: Number(formData.yieldGrams),
-    rating: Number(formData.rating),
+    yieldGrams: toNumberOrNull(formData.yieldGrams),
+    rating: toNumberOrNull(formData.rating),
     tastingNotes: formData.tastingNotes,
   };
 }
@@ -25,16 +37,16 @@ export function versionToFormValues(version) {
 
   return {
     doseGrams: String(version.doseGrams),
-    waterGrams: String(version.waterGrams),
+    waterGrams: toFormString(version.waterGrams),
     grindSize: version.grindSize,
-    waterTempC: String(version.waterTempC),
+    waterTempC: toFormString(version.waterTempC),
     brewTime:
-      brewTimeUnit === "minutes"
+      brewTimeUnit === "minutes" && version.brewTimeSeconds !== null
         ? String(secondsToMinutes(version.brewTimeSeconds))
-        : String(version.brewTimeSeconds),
+        : toFormString(version.brewTimeSeconds),
     brewTimeUnit,
-    yieldGrams: String(version.yieldGrams),
-    rating: String(version.rating),
+    yieldGrams: toFormString(version.yieldGrams),
+    rating: toFormString(version.rating),
     tastingNotes: version.tastingNotes,
   };
 }
