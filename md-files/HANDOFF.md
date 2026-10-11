@@ -1,6 +1,6 @@
 # Brew It — Session Handoff
 
-Last updated: 2026-10-11 · HEAD: `7da9443` · Branch: `main` (solo project, commits go straight to `main`)
+Last updated: 2026-10-11 · HEAD: `dd57ede` · Branch: `main` (solo project, commits go straight to `main`)
 
 **This file is the single source of truth for the project.** If anything else (old notes, earlier chats) disagrees with it, this file wins. Read it first, then `src/App.jsx`.
 
@@ -24,17 +24,19 @@ Workflow and answer style: see CLAUDE.md in the project root.
 | File | What it does |
 |---|---|
 | `main.jsx` | Mounts `<App />` in `StrictMode` (template style: single quotes, no semicolons; left as is) |
-| `index.css` | Global font, text `#3b2f2f`, background `#faf7f2`, `overflow-anchor: none` on `body` (see §5) |
-| `App.jsx` | All state and handlers, localStorage load/save, `sampleRecipes`, `emptyForm`, the Create card, recipe cards + Version History rendering |
-| `App.css` | All app styles (cards, edit forms, grid, highlight, edit mode, Version History frame) |
-| `components/RecipeEditForm.jsx` | The **only** form, used by all four: Create, Edit Recipe, New Version, Edit Version. A `<form>` laid out like the expanded card, reusing the `version-grid` / `version-notes` / `card-actions` CSS. Props: `initialValues`, `onSave`, `onCancel`, `subtitle` (plain text under the name, optional), `showRecipeFields` (name/bean/method, default `true`), `submitLabel` (default `"Save Changes"`). Adds the `recipe-level-form` class (darker inputs) when `showRecipeFields` is true. String values; live read-only ratio via `formatRatio(formToVersionFields(formData))`; name input placeholder "Recipe's name"; brew time = number + sec/min `<select>`; `onWheel` blurs a focused number input so scrolling moves the page, not the value |
+| `index.css` | Global font, text `#3b2f2f`, background `#faf7f2`, `overflow-anchor: none` on `body` (see §5), `scroll-behavior: smooth` on `html` inside `@media (prefers-reduced-motion: no-preference)` (reduced-motion users get instant jumps) |
+| `App.jsx` | All state and handlers, localStorage load/save, `sampleRecipes`, `emptyForm`. Renders `<main className="app">`: `<Landing />`, then `<section id="recipes">` (h2 "Your recipes", Create Recipe button, the Create card, recipe cards + Version History), then `<About />` |
+| `App.css` | All app styles (landing, `.button-link`, about, cards, edit forms, grid, highlight, edit mode, Version History frame) |
+| `components/Landing.jsx` | Display-only first screen (no props, no state): h1 "Brew It", tagline "Your personal coffee journal", "Your recipes" (`#recipes`) and "About" (`#about`) links styled as buttons (`.button-link`), and a disabled "Create with AI" button with "Coming soon" under it (linked via `aria-describedby`). `min-height: calc(100vh - 64px)` (`.app` has 64px top padding), content centered |
+| `components/About.jsx` | Display-only About section (`id="about"`, no props, no state): what the app does, versions, browser-only storage, AI coming soon, author + GitHub · LinkedIn links (new tab, `rel="noopener noreferrer"`) |
+| `components/RecipeEditForm.jsx` | The **only** form, used by all four: Create, Edit Recipe, New Version, Edit Version. A `<form>` laid out like the expanded card, reusing the `version-grid` / `version-notes` / `card-actions` CSS. Props: `initialValues`, `onSave`, `onCancel`, `subtitle` (plain text under the name, optional), `showRecipeFields` (name/bean/method, default `true`), `submitLabel` (default `"Save Changes"`). Adds the `recipe-level-form` class (darker inputs) when `showRecipeFields` is true. String values; live read-only ratio via `formatRatio(formToVersionFields(formData))`; name input placeholder "Recipe's name"; brew time = number + sec/min `<select>`; `onWheel` blurs a focused number input so scrolling moves the page, not the value. Validation (§4): `required` attributes; `handleChange` calls `setCustomValidity` on every `type="text"` input so whitespace-only fails; `handleSubmit` trims every string value before `onSave` |
 | `components/VersionSummary.jsx` | `{ version, compareTo? }` → 4-column grid: Dose, Yield, Brew time, Rating |
 | `components/VersionDetails.jsx` | `{ version, compareTo? }` → `VersionSummary` (row 1) + Grind size, Water, Ratio, Temperature (row 2) + Tasting notes |
 | `components/VersionField.jsx` | One grid cell: `<dt>` label + `<dd>` with `ComparedValue` |
 | `components/ComparedValue.jsx` | `{ version, compareTo, isChanged, format }` → plain text, or `<mark>` value + "now X" when changed |
-| `utils/format.js` | `formatDate`, `secondsToMinutes`, `formatBrewTime`, `formatGrams`, `formatTemp`, `formatRating`, `formatRatio` |
+| `utils/format.js` | `formatDate`, `secondsToMinutes`, `formatBrewTime`, `formatGrams`, `formatTemp`, `formatRating`, `formatRatio`. All value formatters return "—" for `null` (`formatRatio` also for missing/0 dose or water) |
 | `utils/compare.js` | `getChangedFields(version, current)` → `{ doseGrams, waterGrams, ratio, grindSize, waterTempC, brewTime, yieldGrams, rating }` booleans |
-| `utils/versionForm.js` | `formToVersionFields(formData)` (form → saved fields, no id/createdAt) and `versionToFormValues(version)` (saved → form strings) |
+| `utils/versionForm.js` | `formToVersionFields(formData)` (form → saved fields, no id/createdAt) and `versionToFormValues(version)` (saved → form strings). Helpers: `toNumberOrNull` (`""` → `null`, else `Number`) and `toFormString` (`null` → `""`). Empty brew time → `null` |
 | `utils/recipe.js` | `getRecipeCreatedAt(recipe)` → `recipe.createdAt ?? recipe.versions[0].createdAt` (sort key, §3) |
 
 **State in `App`:** `recipes` (lazy init `useState(loadRecipes)`), `activeForm`, `expandedRecipeId`, `expandedVersionId`. `sortedRecipes` is derived at render (§3).
@@ -53,6 +55,7 @@ Version: { id, createdAt /* ISO */, doseGrams, waterGrams, grindSize /* string *
 - `recipe.createdAt` is set only on recipes created from now on (same timestamp as their first version). **Missing = `versions[0].createdAt`** via `getRecipeCreatedAt` (older data and `sampleRecipes` have none). Storing it keeps the order stable if a recipe's oldest version is deleted.
 - **Display order:** newest first by creation date. `sortedRecipes = recipes.slice().sort(...)` at render (ISO strings compared with `localeCompare`); the stored array order is unchanged (new recipes are still appended).
 - `brewTimeSeconds` is **always seconds**. `brewTimeUnit` (`"seconds"` | `"minutes"`) is only a display preference; **missing = seconds** (older data and `sampleRecipes` have none).
+- `waterGrams`, `waterTempC`, `brewTimeSeconds`, `yieldGrams`, `rating` can be **`null`** (optional field left empty), shown as "—". Old saved `0` values stay `0` (no migration). `doseGrams` is required, so always a number.
 - Ratio is **derived** (`formatRatio`), never stored, so it can't get out of sync.
 - Form values are **strings** while editing (keeps inputs predictable). `versionToFormValues` / `formToVersionFields` convert in both directions.
 - Changing the shape affects saved data in testers' browsers. Plan a fallback in the code (like `?? "seconds"`) for any new field.
@@ -83,6 +86,12 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - **Version History:** `<details>` on every card in a tinted frame (`#f5efe6`, border, rounded), with the previous versions newest first (`slice(0, -1).reverse()`), separated by lines. Each entry shows "Version N", date, summary or details, and View/Hide Version · Edit · Delete. Only one version is expanded app-wide (`expandedVersionId`).
 - **Number inputs:** spinner arrows hidden in all forms (CSS); wheel blurs the input (see §2). Edit-form temperature label is "Temp (°C)".
 - **Comparison highlighting:** see §5.
+- **Validation** (all four forms, native browser validation):
+  - Required: name, bean, method, dose, grind size. Optional: water, temp, brew time, yield, rating, tasting notes.
+  - Whitespace-only text is blocked ("Please fill out this field." via `setCustomValidity`); every string is trimmed on save.
+  - `step="any"` on dose, water, yield, temp (decimals like 16.5 work); `min="0"` on dose.
+  - Empty optional numbers save as `null` and show as "—".
+- **One-page layout:** Landing → Your recipes → About, one long scrolling page. The landing links jump to `#recipes` / `#about` (smooth scroll unless reduced motion is on).
 
 ---
 
@@ -97,7 +106,7 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
   - This **replaces** an older "green = same / red = different" idea. Don't reintroduce it.
 - **Units, no space:** `17g`, `93°C`, `27s`, `3min`, `7.5/10`, `1:16.7`. All display formatting goes through `utils/format.js`; no unit strings in components. Form labels stay "Dose (g)" etc.
 - **Rating:** 1–10 in 0.5 steps.
-- **Layout:** in-card expansion, not a details page. Routing (`react-router-dom`, `/recipes/:id`) was tried and removed; don't reintroduce it unless the owner changes this. Grid columns are `repeat(4, minmax(0, 6rem))` (2 columns at ≤480px) so columns line up across the card and every history entry.
+- **Layout:** one long scrolling page with anchor links (`#recipes`, `#about`); recipes use in-card expansion, not a details page. Routing (`react-router-dom`, `/recipes/:id`) was tried and removed; don't reintroduce it unless the owner changes this. Grid columns are `repeat(4, minmax(0, 6rem))` (2 columns at ≤480px) so columns line up across the card and every history entry.
 - **Version numbers are positional** (`previousVersions.length - index`), so they shift after deleting a version. Accepted for now.
 - **Recipe order is derived** (sorted copy at render), not stored, so it can't get out of sync and state is never mutated.
 - **Code structure:** pure helpers live in `src/utils/`, not in `App.jsx`. Importing from `App.jsx` would create circular imports and break the react-refresh lint rule.
@@ -107,6 +116,11 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - **Recipe-level vs version-level forms:** told apart only by input colour (`recipe-level-form` class from `showRecipeFields`), no extra props.
 - **`overflow-anchor: none`** on `body` (`index.css`): stops the browser's scroll anchoring from jumping the page when a card's content is swapped and grows (e.g. entering edit mode).
 - **AI architecture (planned):** the API key **never** goes in the client. A small serverless function receives recipe data and calls the AI. The AI only suggests; the user applies changes via New Version. It must not make the project unnecessarily complex.
+- **AI placement (planned):** "Ask AI" = a button on each recipe (the question is about one recipe). "Create with AI" = one chat section on the page. AI-made recipes are never saved automatically: the user reviews and clicks Save.
+- **Unfinished features:** a disabled button with "Coming soon", never a button that does nothing.
+- **Empty optional numbers are `null`, not `0`:** `0` looks like a real measurement (e.g. "0/10").
+- **Whitespace check covers every `type="text"` input**, because all of them are required. A future optional text input needs this check changed (e.g. check `event.target.required`).
+- **Smooth scrolling:** kept for now; revisit if long recipe lists make it feel like too much.
 
 ---
 
@@ -114,20 +128,24 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 
 - Edit Recipe's name input also shows the "Recipe's name" placeholder if the name is cleared.
 - The browser's default grey placeholder on the darker `#f3dfc1` inputs is under 4.5:1 contrast.
+- A dose of `0` is still allowed (`min="0"`); the ratio then shows "—".
+- An old version can show "250g" with "now —" when the current version's field is empty.
+- Empty tasting notes show as blank, not "—".
+- `.button-link` copies Chrome's default button look; it may differ in Safari/Firefox.
+- The landing's `calc(100vh - 64px)` can be slightly taller than the visible screen on phones (`100svh` would fix it).
 
 ---
 
 ## 7. Next steps (in order)
 
-a. **Validation commit** (applies to **all** forms):
-   - Native browser validation (`required`); trim text so whitespace-only fails.
-   - Required: name, bean, method, dose, grind size. Optional: water, temp, brew time, yield, rating, tasting notes.
-   - `step="any"` on dose, water, yield, temp (today decimals like 16.5 are rejected by the browser).
-   - Empty optional numbers are stored as `null` and displayed as "—" (`0` would read as a real measurement, e.g. "0/10" rating). Old data that already has `0` stays as it is. Filling a previously empty field counts as a change in history highlighting ("—" vs "250g").
-b. **Deploy:** the owner's first time, so walk through it step by step (likely Vercel or Netlify with auto-deploy from GitHub). No routing, so no special config is expected.
-c. **"Ask AI about this recipe":** small serverless function holds the key; AI only suggests; the user applies via New Version; proper loading and error states (also the API-fundamentals learning goal).
-d. **Design pass.**
-e. **"Create recipe with AI".**
+a. **Deploy:** the owner's first time, so walk through it step by step (likely Vercel or Netlify with auto-deploy from GitHub). No routing, so no special config is expected.
+b. **"Ask AI about this recipe":** a button on each recipe; small serverless function holds the key; AI only suggests; the user applies via New Version; proper loading and error states (also the API-fundamentals learning goal).
+c. **Design pass**, including:
+   - A sticky navigation bar (Brew It · Your recipes · About) that stays on screen, to jump anywhere and back to the top.
+   - Recipe card names from `h2` to `h3` (they're now under the "Your recipes" `h2`).
+   - Real styling for the landing and buttons.
+   - `100svh` on the landing.
+d. **"Create with AI":** one chat section; replaces "Coming soon".
 
 Later, unscheduled: search/filtering; replace `README.md` + portfolio presentation.
 
@@ -135,7 +153,6 @@ Later, unscheduled: search/filtering; replace `README.md` + portfolio presentati
 
 ## 8. Known gaps (not decided yet)
 
-- No form validation yet: empty number fields save as `0` (`Number("") === 0`), and a blank recipe can be created (→ §7a).
 - `localStorage.setItem` in the save effect isn't wrapped in try/catch.
 - The forms say "sec"/"min" while the cards show "s"/"min".
 - The page can jump when a card changes size near the bottom of the page (`overflow-anchor: none`); revisit after the redesign.
@@ -168,3 +185,5 @@ npm run build    # also catches import errors
 
 - Run git with `--no-optional-locks` (a leftover `.git/index.lock` blocked git once).
 - Review trigger phrase: **"review the uncommitted changes"**.
+- The reviewer (Claude in the desktop app) answers in simple, user-friendly language and writes the prompts for Claude Code.
+- The reviewer's shell runs on Linux, so `npm run build` and Prettier can't run there (Mac `node_modules`); `npm run lint` can.
