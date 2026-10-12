@@ -1,6 +1,6 @@
 # Brew It — Session Handoff
 
-Last updated: 2026-10-11 · HEAD: `dd57ede` · Branch: `main` (solo project, commits go straight to `main`)
+Last updated: 2026-10-12 · HEAD: `cc48461` · Branch: `main` (solo project, commits go straight to `main`)
 
 **This file is the single source of truth for the project.** If anything else (old notes, earlier chats) disagrees with it, this file wins. Read it first, then `src/App.jsx`.
 
@@ -12,6 +12,7 @@ Last updated: 2026-10-11 · HEAD: `dd57ede` · Branch: `main` (solo project, com
 
 - **Feel:** simple, intuitive, visually clean. Shareable with close people for testing; browser-only data and no multi-user are fine for now.
 - **Stack:** React 19, JavaScript (no TypeScript), Vite 8, plain CSS, `localStorage`, ESLint. No routing, no backend (yet), no UI or state libraries.
+- **Live:** https://brewit-journal.vercel.app · **Repo (public):** https://github.com/RoeyMadjar/Brew-It
 - **Product philosophy:** stay a focused portfolio project. Don't add auth, databases, complex backend, social/multi-user features, state libraries or agent systems. Add complexity only for a concrete reason, never because it's "more professional".
 - **Learning goals:** React state, componentization, forms, derived values, localStorage, refactoring, UX decisions, Git, then API fundamentals (loading/error states) and AI behind a small backend.
 
@@ -92,6 +93,7 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
   - `step="any"` on dose, water, yield, temp (decimals like 16.5 work); `min="0"` on dose.
   - Empty optional numbers save as `null` and show as "—".
 - **One-page layout:** Landing → Your recipes → About, one long scrolling page. The landing links jump to `#recipes` / `#about` (smooth scroll unless reduced motion is on).
+- **Deployed on Vercel** (Hobby), project name `brew-it`, domain `brewit-journal.vercel.app`. Every push to `main` auto-deploys. Default Vite settings (`npm run build` → `dist`).
 
 ---
 
@@ -121,6 +123,8 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - **Empty optional numbers are `null`, not `0`:** `0` looks like a real measurement (e.g. "0/10").
 - **Whitespace check covers every `type="text"` input**, because all of them are required. A future optional text input needs this check changed (e.g. check `event.target.required`).
 - **Smooth scrolling:** kept for now; revisit if long recipe lists make it feel like too much.
+- **Deploys:** committing locally doesn't change the live site; pushing to `main` does.
+- **AI API key (future):** goes in Vercel → Settings → Environment Variables, never in the code.
 
 ---
 
@@ -133,19 +137,19 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - Empty tasting notes show as blank, not "—".
 - `.button-link` copies Chrome's default button look; it may differ in Safari/Firefox.
 - The landing's `calc(100vh - 64px)` can be slightly taller than the visible screen on phones (`100svh` would fix it).
+- Each site address has its own localStorage (`localhost` and `brewit-journal.vercel.app` are separate), so testers start with the sample recipe.
 
 ---
 
 ## 7. Next steps (in order)
 
-a. **Deploy:** the owner's first time, so walk through it step by step (likely Vercel or Netlify with auto-deploy from GitHub). No routing, so no special config is expected.
-b. **"Ask AI about this recipe":** a button on each recipe; small serverless function holds the key; AI only suggests; the user applies via New Version; proper loading and error states (also the API-fundamentals learning goal).
-c. **Design pass**, including:
+a. **"Ask AI about this recipe"** (start it in a new session): a button on each recipe; small serverless function holds the key; AI only suggests; the user applies via New Version; proper loading and error states (also the API-fundamentals learning goal).
+b. **Design pass**, including:
    - A sticky navigation bar (Brew It · Your recipes · About) that stays on screen, to jump anywhere and back to the top.
    - Recipe card names from `h2` to `h3` (they're now under the "Your recipes" `h2`).
    - Real styling for the landing and buttons.
    - `100svh` on the landing.
-d. **"Create with AI":** one chat section; replaces "Coming soon".
+c. **"Create with AI":** one chat section; replaces "Coming soon".
 
 Later, unscheduled: search/filtering; replace `README.md` + portfolio presentation.
 
@@ -178,6 +182,7 @@ npm run build    # also catches import errors
 - `StrictMode` runs effects twice in dev. This is harmless for the save effect.
 - Swapping a card's content for something taller (like edit mode) can make the browser's scroll anchoring jump the page. `overflow-anchor: none` on `body` in `index.css` prevents this; keep it.
 - Inside `<details>`, `preventDefault()` on the `<summary>` click cancels the native toggle (used by the Version History guard).
+- **Git on the owner's Mac** is Apple's (`/usr/bin/git`). Homebrew's Git was removed because it was broken (missing libcurl symbol; Homebrew has no fixed build for this Mac, "Tier 3"). Don't reinstall Git with Homebrew.
 
 ---
 
