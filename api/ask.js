@@ -1,5 +1,27 @@
 // Vercel serverless function: POST /api/ask with { recipe, question }.
-// Step 1: returns a fake answer (no AI call yet).
+// Asks Claude about one recipe and returns { answer } or { error }.
+
+const MODEL = "claude-haiku-5-5";
+const MAX_TOKENS = 600;
+const MAX_QUESTION_LENGTH = 500;
+const MAX_RECIPE_LENGTH = 20000;
+const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+const AI_ERROR = "The AI couldn't answer right now. Please try again.";
+
+const SYSTEM_PROMPT = `You are a coffee brewing assistant inside Brew It, a coffee recipe journal.
+
+The user sends one recipe as JSON. It has name, bean and method, and "versions" ordered from oldest to newest. The LAST version is the current one; older versions are earlier experiments.
+Units: doseGrams, waterGrams and yieldGrams are grams; waterTempC is °C; brewTimeSeconds is always seconds (brewTimeUnit is only how the user likes to see it); rating is out of 10. null means the value wasn't recorded.
+
+Answer the user's question about THIS recipe. The answer is shown in a small panel on the recipe card, so keep it short. Use this format:
+- One short sentence on the likely cause.
+- Then at most 2 numbered changes, one line each: the value, from → to, and why in a few words. The user will try them as a New Version.
+- Mention missing data only if it really matters for this question, in one short line.
+
+Keep it under about 80 words, plain text, no markdown (numbered lines are fine).
+Use only the data in the recipe; don't invent values or tasting notes.
+Never mention version ids (like "v2"). Say "your current version", or "Version N" where N counts from the oldest version (Version 1).
+If the question isn't about coffee, politely say you can only help with this recipe.`;
 
 function errorResponse(status, message) {
   return Response.json({ error: message }, { status });
@@ -24,12 +46,71 @@ export default {
     if (trimmedQuestion === "") {
       return errorResponse(400, "Please write a question.");
     }
+    if (trimmedQuestion.length > MAX_QUESTION_LENGTH) {
+      return errorResponse(
+        400,
+        `The question is too long (max ${MAX_QUESTION_LENGTH} characters).`,
+      );
+    }
     if (!recipe || typeof recipe !== "object") {
       return errorResponse(400, "The recipe is missing.");
     }
+    const recipeJson = JSON.stringify(recipe);
+    if (recipeJson.length > MAX_RECIPE_LENGTH) {
+      return errorResponse(400, "This recipe is too large to send to the AI.");
+    }
 
-    return Response.json({
-      answer: `Fake answer: you asked "${trimmedQuestion}" about ${recipe.name}.`,
-    });
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return errorResponse(500, "AI isn't set up on the server.");
+    }
+
+    let data;
+    try {
+      const aiResponse = await fetch(ANTHROPIC_URL, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": apiKey,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: MAX_TOKENS,
+          // Thinking is adaptive by default; low effort keeps most tokens for the answer.
+          output_config: { effort: "low" },
+          system: SYSTEM_PROMPT,
+          messages: [
+            {
+              role: "user",
+              content: `Recipe (JSON):\n${recipeJson}\n\nQuestion: ${trimmedQuestion}`,
+            },
+          ],
+        }),
+      });
+
+      data = await aiResponse.json().catch(() => null);
+      if (!aiResponse.ok) {
+        console.error("Anthropic error:", aiResponse.status, data?.error?.type);
+        return errorResponse(502, AI_ERROR);
+      }
+    } catch (error) {
+      console.error("Anthropic request failed:", error.name);
+      return errorResponse(502, AI_ERROR);
+    }
+
+    // Keep only text blocks; thinking blocks are skipped.
+    const answer = (data?.content ?? [])
+      .filter((block) => block.type === "text")
+      .map((block) => block.text)
+      .join("")
+      .trim();
+
+    if (answer === "") {
+      console.error("Anthropic returned no text:", data?.stop_reason);
+      return errorResponse(502, AI_ERROR);
+    }
+
+    return Response.json({ answer });
   },
 };
