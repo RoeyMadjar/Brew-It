@@ -77,7 +77,10 @@ export default {
         body: JSON.stringify({
           model: MODEL,
           max_tokens: MAX_TOKENS,
-          // Thinking is adaptive by default; low effort keeps most tokens for the answer.
+          // Thinking off: short suggestions don't need reasoning, and with it
+          // on, thinking could use all of MAX_TOKENS and leave no text.
+          // (Haiku 5.5 allows "disabled" only at effort "high" or below.)
+          thinking: { type: "disabled" },
           output_config: { effort: "low" },
           system: SYSTEM_PROMPT,
           messages: [
