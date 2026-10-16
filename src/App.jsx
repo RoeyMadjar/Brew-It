@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import About from "./components/About.jsx";
+import AskAi from "./components/AskAi.jsx";
 import Landing from "./components/Landing.jsx";
 import RecipeEditForm from "./components/RecipeEditForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
@@ -71,6 +72,8 @@ function App() {
   const [activeForm, setActiveForm] = useState(null);
   const [expandedRecipeId, setExpandedRecipeId] = useState(null);
   const [expandedVersionId, setExpandedVersionId] = useState(null);
+  // Only one Ask AI panel is open in the whole app.
+  const [askAiRecipeId, setAskAiRecipeId] = useState(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
@@ -340,6 +343,7 @@ function App() {
             const isEditingVersionHere =
               activeForm?.type === "editVersion" &&
               activeForm.recipeId === recipe.id;
+            const isAskAiOpen = askAiRecipeId === recipe.id;
 
             return (
               <article
@@ -418,6 +422,14 @@ function App() {
                           <button
                             type="button"
                             onClick={() =>
+                              setAskAiRecipeId(isAskAiOpen ? null : recipe.id)
+                            }
+                          >
+                            {isAskAiOpen ? "Hide AI" : "Ask AI"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
                               handleStartRecipeEdit(recipe.id, isExpanded)
                             }
                           >
@@ -434,6 +446,9 @@ function App() {
                     )}
                   </>
                 )}
+                {/* Outside the ternary above, so it stays mounted (and keeps
+                    its answer) while Edit or New Version is open. */}
+                {isAskAiOpen && <AskAi key={recipe.id} recipe={recipe} />}
                 <details className="version-history">
                   {/* preventDefault stops <details> from closing while one of
                       its versions is being edited. */}

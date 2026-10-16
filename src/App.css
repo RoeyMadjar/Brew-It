@@ -157,6 +157,39 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: #f5efe6;
 }
 
+/* Same tinted frame as Version History. */
+.ask-ai {
+  margin-top: 16px;
+  padding: 8px 12px;
+  border: 1px solid #e0d6c8;
+  border-radius: 8px;
+  background-color: #f5efe6;
+}
+
+.ask-ai label {
+  display: block;
+  font-size: 0.85em;
+  font-weight: 700;
+}
+
+.ask-ai textarea {
+  box-sizing: border-box;
+  width: 100%;
+  margin: 4px 0 8px;
+  font: inherit;
+}
+
+/* pre-line keeps the AI's line breaks (numbered suggestions). */
+.ask-ai-answer {
+  white-space: pre-line;
+}
+
+.recipe-card .ask-ai-note {
+  margin-top: 0;
+  font-size: 0.85em;
+  color: #6f6461;
+}
+
 .version-entry {
   margin-top: 12px;
   padding-top: 12px;
