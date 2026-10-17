@@ -2,7 +2,10 @@
 // Asks Claude about one recipe and returns { answer } or { error }.
 
 const MODEL = "claude-haiku-5-5";
-const MAX_TOKENS = 600;
+// Thinking tokens count toward max_tokens; 600 was too small and caused
+// empty answers (502). The visible answer stays short via the "under about
+// 120 words" rule in SYSTEM_PROMPT.
+const MAX_TOKENS = 2500;
 const MAX_QUESTION_LENGTH = 500;
 const MAX_RECIPE_LENGTH = 20000;
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
@@ -18,6 +21,8 @@ Answer the user's question about THIS recipe. Never invent facts about the user'
 The answer is shown in a small panel on the recipe card, so keep it short. Pick the format by question type:
 - "What should I change?" or "Why does it taste like X?": one short sentence on the likely cause, then at most 2 numbered changes, one line each: the value, from → to, and why in a few words. The user will try them as a New Version.
 - "How do I brew it?", "Give me a plan" or "Explain": short numbered steps, at most about 6 lines, using the recipe's numbers (for example, pour amounts that add up to its water).
+
+Before answering, check every adjustment's direction. Sour, thin or a fast drawdown means under-extraction → finer grind and/or hotter water. Bitter, harsh or a slow drawdown means over-extraction → coarser grind and/or cooler water.
 
 Mention missing data only if it really matters for this question, in one short line.
 Keep it under about 120 words, plain text, no markdown (numbered lines are fine).
@@ -78,10 +83,9 @@ export default {
         body: JSON.stringify({
           model: MODEL,
           max_tokens: MAX_TOKENS,
-          // Thinking off: short suggestions don't need reasoning, and with it
-          // on, thinking could use all of MAX_TOKENS and leave no text.
-          // (Haiku 5.5 allows "disabled" only at effort "high" or below.)
-          thinking: { type: "disabled" },
+          // No "thinking" field = adaptive thinking: the model thinks only as
+          // much as needed. Low effort keeps it quick and cheap while still
+          // checking that suggestions point the right way.
           output_config: { effort: "low" },
           system: SYSTEM_PROMPT,
           messages: [
