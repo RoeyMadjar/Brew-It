@@ -1,6 +1,6 @@
 # Brew It — Session Handoff
 
-Last updated: 2026-10-12 · HEAD: `cc48461` · Branch: `main` (solo project, commits go straight to `main`)
+Last updated: 2026-10-17 · HEAD: `9352e83` · Branch: `main` (solo project, commits go straight to `main`)
 
 **This file is the single source of truth for the project.** If anything else (old notes, earlier chats) disagrees with it, this file wins. Read it first, then `src/App.jsx`.
 
@@ -11,25 +11,27 @@ Last updated: 2026-10-12 · HEAD: `cc48461` · Branch: `main` (solo project, com
 **Brew It** is a coffee recipe journal with versioning: the owner's first portfolio project as a junior frontend dev. A coffee hobbyist saves recipes, records each brew (dose, water, grind, temp, time, yield, rating, notes), and creates **new versions** while experimenting without losing old ones.
 
 - **Feel:** simple, intuitive, visually clean. Shareable with close people for testing; browser-only data and no multi-user are fine for now.
-- **Stack:** React 19, JavaScript (no TypeScript), Vite 8, plain CSS, `localStorage`, ESLint. No routing, no backend (yet), no UI or state libraries.
-- **Live:** https://brewit-journal.vercel.app · **Repo (public):** https://github.com/RoeyMadjar/Brew-It
+- **Stack:** React 19, JavaScript (no TypeScript), Vite 8, plain CSS, `localStorage`, ESLint. No routing, no UI or state libraries. One Vercel serverless function (`api/`) calls the Anthropic API (Claude Haiku 5.5) with plain `fetch`, no SDK.
+- **Live:** https://brewit-journal.vercel.app (includes Ask AI) · **Repo (public):** https://github.com/RoeyMadjar/Brew-It
 - **Product philosophy:** stay a focused portfolio project. Don't add auth, databases, complex backend, social/multi-user features, state libraries or agent systems. Add complexity only for a concrete reason, never because it's "more professional".
-- **Learning goals:** React state, componentization, forms, derived values, localStorage, refactoring, UX decisions, Git, then API fundamentals (loading/error states) and AI behind a small backend.
+- **Learning goals:** React state, componentization, forms, derived values, localStorage, refactoring, UX decisions, Git, API fundamentals (loading/error states) and AI behind a small backend (both done with Ask AI).
 
 Workflow and answer style: see CLAUDE.md in the project root.
 
 ---
 
-## 2. Architecture (`src/`)
+## 2. Architecture (`src/`, `api/`)
 
 | File | What it does |
 |---|---|
+| `api/ask.js` | Vercel serverless function. `POST /api/ask` with `{ recipe, question }` → `{ answer }` or `{ error }`. Web-standard handler (`export default { fetch(request) }`: Request in, Response out). Constants: `MODEL`, `MAX_TOKENS` 2500, `MAX_QUESTION_LENGTH` 500, `MAX_RECIPE_LENGTH` 20000, `SYSTEM_PROMPT` (§5). Status codes: 400 bad input, 405 not POST, 500 key missing, 502 Anthropic failed or returned no text. Keeps only `text` blocks of the response. `console.error` logs status + error type only (never the key) |
 | `main.jsx` | Mounts `<App />` in `StrictMode` (template style: single quotes, no semicolons; left as is) |
 | `index.css` | Global font, text `#3b2f2f`, background `#faf7f2`, `overflow-anchor: none` on `body` (see §5), `scroll-behavior: smooth` on `html` inside `@media (prefers-reduced-motion: no-preference)` (reduced-motion users get instant jumps) |
 | `App.jsx` | All state and handlers, localStorage load/save, `sampleRecipes`, `emptyForm`. Renders `<main className="app">`: `<Landing />`, then `<section id="recipes">` (h2 "Your recipes", Create Recipe button, the Create card, recipe cards + Version History), then `<About />` |
-| `App.css` | All app styles (landing, `.button-link`, about, cards, edit forms, grid, highlight, edit mode, Version History frame) |
+| `App.css` | All app styles (landing, `.button-link`, about, cards, edit forms, grid, highlight, edit mode, Version History frame, `.ask-ai*` panel, `.visually-hidden` utility) |
 | `components/Landing.jsx` | Display-only first screen (no props, no state): h1 "Brew It", tagline "Your personal coffee journal", "Your recipes" (`#recipes`) and "About" (`#about`) links styled as buttons (`.button-link`), and a disabled "Create with AI" button with "Coming soon" under it (linked via `aria-describedby`). `min-height: calc(100vh - 64px)` (`.app` has 64px top padding), content centered |
-| `components/About.jsx` | Display-only About section (`id="about"`, no props, no state): what the app does, versions, browser-only storage, AI coming soon, author + GitHub · LinkedIn links (new tab, `rel="noopener noreferrer"`) |
+| `components/About.jsx` | Display-only About section (`id="about"`, no props, no state): what the app does, versions, storage (browser-only; Ask AI sends that one recipe + question to Anthropic's Claude), Ask AI ("Create with AI" coming soon), author ("Made with React and the Claude API") + GitHub · LinkedIn links (new tab, `rel="noopener noreferrer"`) |
+| `components/AskAi.jsx` | Ask AI panel. Props `{ recipe }`. State: `question`, `status` (`"idle"` \| `"loading"` \| `"error"` \| `"success"`), `answer`, `errorMessage`. Posts to `/api/ask`; see §4 |
 | `components/RecipeEditForm.jsx` | The **only** form, used by all four: Create, Edit Recipe, New Version, Edit Version. A `<form>` laid out like the expanded card, reusing the `version-grid` / `version-notes` / `card-actions` CSS. Props: `initialValues`, `onSave`, `onCancel`, `subtitle` (plain text under the name, optional), `showRecipeFields` (name/bean/method, default `true`), `submitLabel` (default `"Save Changes"`). Adds the `recipe-level-form` class (darker inputs) when `showRecipeFields` is true. String values; live read-only ratio via `formatRatio(formToVersionFields(formData))`; name input placeholder "Recipe's name"; brew time = number + sec/min `<select>`; `onWheel` blurs a focused number input so scrolling moves the page, not the value. Validation (§4): `required` attributes; `handleChange` calls `setCustomValidity` on every `type="text"` input so whitespace-only fails; `handleSubmit` trims every string value before `onSave` |
 | `components/VersionSummary.jsx` | `{ version, compareTo? }` → 4-column grid: Dose, Yield, Brew time, Rating |
 | `components/VersionDetails.jsx` | `{ version, compareTo? }` → `VersionSummary` (row 1) + Grind size, Water, Ratio, Temperature (row 2) + Tasting notes |
@@ -40,7 +42,9 @@ Workflow and answer style: see CLAUDE.md in the project root.
 | `utils/versionForm.js` | `formToVersionFields(formData)` (form → saved fields, no id/createdAt) and `versionToFormValues(version)` (saved → form strings). Helpers: `toNumberOrNull` (`""` → `null`, else `Number`) and `toFormString` (`null` → `""`). Empty brew time → `null` |
 | `utils/recipe.js` | `getRecipeCreatedAt(recipe)` → `recipe.createdAt ?? recipe.versions[0].createdAt` (sort key, §3) |
 
-**State in `App`:** `recipes` (lazy init `useState(loadRecipes)`), `activeForm`, `expandedRecipeId`, `expandedVersionId`. `sortedRecipes` is derived at render (§3).
+`eslint.config.js` (project root) gives `api/**/*.js` Node globals (`process`).
+
+**State in `App`:** `recipes` (lazy init `useState(loadRecipes)`), `activeForm`, `expandedRecipeId`, `expandedVersionId`, `askAiRecipeId` (the one open Ask AI panel, or `null`). `sortedRecipes` is derived at render (§3).
 **Handlers:** `blockIfEditing` (the one-edit guard, §4), `openForm` (guard + `setActiveForm`, used by Create), `handleStartRecipeEdit`, `handleStartNewVersion`, `handleCancelRecipeEdit` (cancels both Edit Recipe and New Version), `handleStartVersionEdit`, `handleCancelVersionEdit`, `handleDelete`, `handleDeleteVersion`, `handleCreateRecipe`, `handleSaveNewVersion`, `handleSaveRecipeEdit`, `handleSaveVersionEdit`.
 
 ---
@@ -82,7 +86,14 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
   - editRecipe: "Save / Cancel changes in {name} first."
   - editVersion: "Save / Cancel changes in Version {N} of {name} recipe first." (N counted from the oldest version, matching the history numbers)
 - **Version History `<summary>`:** while one of *its* versions is being edited, clicking it shows the guard alert and `preventDefault()` keeps it open. Other recipes' histories and View/Hide buttons aren't guarded.
-- **Card:** name (h2), date as a muted subtitle, Bean, Method, 4-column summary, buttons View/Hide Recipe · New Version · Edit · Delete.
+- **Card:** name (h2), date as a muted subtitle, Bean, Method, 4-column summary, buttons View/Hide Recipe · New Version · Ask AI/Hide AI · Edit · Delete.
+- **Ask AI:** the "Ask AI" button toggles a panel between the card content and Version History (same tinted frame as the history). One panel open app-wide; it stays open while Edit or New Version is open. The panel:
+  - "Your question" textarea (3 rows, max 500 characters, required, placeholder "How can I make it less bitter?") and an Ask button.
+  - While loading: the button is disabled and says "Asking the AI…"; the textarea stays editable; a visually-hidden `aria-live="polite"` region announces "Asking the AI…".
+  - Success: the answer (line breaks kept, `white-space: pre-line`) and the muted note "AI suggestion. Try it as a New Version."
+  - Error (`role="alert"`, muted red `#a63a2f`, ~5.6:1 on `#f5efe6`): the server's `{ error }` message, or "Couldn't reach the AI. Check your connection and try again." for a network failure or a non-JSON response. Pressing Ask again retries. Details go to `console.error`.
+  - A new question clears the old answer/error first.
+- **Landing "Create with AI"** is still a disabled button with "Coming soon".
 - **Expanded card:** `VersionDetails`. Row 1 *is* `VersionSummary`, so expanding only **adds** info; then row 2 and tasting notes (full width).
 - **Version History:** `<details>` on every card in a tinted frame (`#f5efe6`, border, rounded), with the previous versions newest first (`slice(0, -1).reverse()`), separated by lines. Each entry shows "Version N", date, summary or details, and View/Hide Version · Edit · Delete. Only one version is expanded app-wide (`expandedVersionId`).
 - **Number inputs:** spinner arrows hidden in all forms (CSS); wheel blurs the input (see §2). Edit-form temperature label is "Temp (°C)".
@@ -117,14 +128,27 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - **Editing vs display:** `VersionSummary` / `VersionDetails` / `VersionField` stay display-only (they handle comparison highlighting); all editing lives in `RecipeEditForm`.
 - **Recipe-level vs version-level forms:** told apart only by input colour (`recipe-level-form` class from `showRecipeFields`), no extra props.
 - **`overflow-anchor: none`** on `body` (`index.css`): stops the browser's scroll anchoring from jumping the page when a card's content is swapped and grows (e.g. entering edit mode).
-- **AI architecture (planned):** the API key **never** goes in the client. A small serverless function receives recipe data and calls the AI. The AI only suggests; the user applies changes via New Version. It must not make the project unnecessarily complex.
-- **AI placement (planned):** "Ask AI" = a button on each recipe (the question is about one recipe). "Create with AI" = one chat section on the page. AI-made recipes are never saved automatically: the user reviews and clicks Save.
+- **AI architecture:** the API key **never** goes in the client; `api/ask.js` holds it and calls the AI. The AI only suggests; the user applies changes via New Version.
+- **AI placement:** "Ask AI" = a button on each recipe (the question is about one recipe). "Create with AI" (planned) = one chat section on the page. AI-made recipes are never saved automatically: the user reviews and clicks Save.
+- **Ask AI decisions:**
+  - **Anthropic Claude Haiku 5.5:** cheap, stable, hard monthly spend limit. Gemini's free tier was rejected (uses data for training, limits can change).
+  - **Plain `fetch`, no SDK:** no new dependency; learning goal.
+  - **Sends the whole recipe with all versions:** the AI sees what was already tried.
+  - **Free-text question, one question → one answer:** no chat history; answers aren't saved.
+  - **Thinking: adaptive at effort `"low"`** (no `thinking` field). Disabled thinking gave logic mistakes (reversed temperature advice). Low thinking ≈ $0.001/question; worth it because recruiters may test the site. `MAX_TOKENS` 2500 because thinking tokens count toward it (600 caused empty answers → 502).
+  - **System prompt:** never invent the user's data, but general coffee knowledge is allowed; format by question type (tweak: cause + at most 2 changes; how-to: ≤ ~6 numbered steps); under ~120 words; plain text; never mention version ids; extraction direction rule (sour/thin/fast drawdown → finer/hotter; bitter/harsh/slow → coarser/cooler); off-topic → politely decline.
+  - **No per-user question limit:** no accounts, would need a database. Cost control = Anthropic monthly spend limit ($5) + question/recipe/answer caps.
+  - **Panel rendered outside the edit/display ternary** (keyed by `recipe.id`), so it stays mounted and keeps the answer while New Version or Edit is open: you read the suggestion while filling the form. Not guarded by `blockIfEditing` (it changes no data).
+  - **One `status` variable instead of booleans:** impossible combos (loading + error) can't happen. Same idea as `activeForm`.
+  - **Ask button disabled only while loading:** prevents duplicate requests. Differs on purpose from the one-form guard's alerts.
+  - **Loading text lives on the button;** a visually-hidden `aria-live` region announces it to screen readers (`display: none` would hide it from them too). Errors use `role="alert"`.
+  - **Closing the panel mid-request:** ignored, no AbortController; React ignores state updates after unmount.
 - **Unfinished features:** a disabled button with "Coming soon", never a button that does nothing.
 - **Empty optional numbers are `null`, not `0`:** `0` looks like a real measurement (e.g. "0/10").
 - **Whitespace check covers every `type="text"` input**, because all of them are required. A future optional text input needs this check changed (e.g. check `event.target.required`).
 - **Smooth scrolling:** kept for now; revisit if long recipe lists make it feel like too much.
 - **Deploys:** committing locally doesn't change the live site; pushing to `main` does.
-- **AI API key (future):** goes in Vercel → Settings → Environment Variables, never in the code.
+- **AI API key:** lives in Vercel → Settings → Environment Variables (and the local `.env`), never in the code (§9).
 
 ---
 
@@ -138,18 +162,25 @@ All four forms are inline `RecipeEditForm`s inside a card with the amber `editin
 - `.button-link` copies Chrome's default button look; it may differ in Safari/Firefox.
 - The landing's `calc(100vh - 64px)` can be slightly taller than the visible screen on phones (`100svh` would fix it).
 - Each site address has its own localStorage (`localhost` and `brewit-journal.vercel.app` are separate), so testers start with the sample recipe.
+- AI answers can still be wrong; the note says "AI suggestion".
+- All server failures (including the spend limit being reached) show the same message; the real reason is only in the logs.
+- A long answer could be cut off at `MAX_TOKENS` (unlikely with the word limit).
+- Anyone can call `/api/ask` directly; the spend limit caps the cost.
+- The question textarea is 3 rows; long questions scroll inside it.
 
 ---
 
 ## 7. Next steps (in order)
 
-a. **"Ask AI about this recipe"** (start it in a new session): a button on each recipe; small serverless function holds the key; AI only suggests; the user applies via New Version; proper loading and error states (also the API-fundamentals learning goal).
-b. **Design pass**, including:
+a. **Design pass**, including:
    - A sticky navigation bar (Brew It · Your recipes · About) that stays on screen, to jump anywhere and back to the top.
    - Recipe card names from `h2` to `h3` (they're now under the "Your recipes" `h2`).
    - Real styling for the landing and buttons.
    - `100svh` on the landing.
-c. **"Create with AI":** one chat section; replaces "Coming soon".
+   - A question textarea that grows with its content.
+   - Ask AI panel styling.
+   - Replace the temporary favicon (`public/favicon.svg`).
+b. **"Create with AI":** one chat section; replaces "Coming soon".
 
 Later, unscheduled: search/filtering; replace `README.md` + portfolio presentation.
 
@@ -168,10 +199,17 @@ Later, unscheduled: search/filtering; replace `README.md` + portfolio presentati
 ## 9. Gotchas & commands
 
 ```bash
-npm run dev      # http://localhost:5173
+npm run dev      # http://localhost:5173 (no /api)
+vercel dev       # http://localhost:3000 (app + /api, needed for AI)
 npm run lint     # must pass clean
 npm run build    # also catches import errors
 ```
+- **AI features need `vercel dev`;** `npm run dev` has no `/api` (404). Restart `vercel dev` after changing env files.
+- **Local key:** `ANTHROPIC_API_KEY` in `.env` (`vercel dev` did NOT load it from `.env.local`). `.env*` and `.vercel` are gitignored. Don't run `vercel env pull` (it rewrites `.env.local`).
+- **Live key:** Vercel → Settings → Environment Variables, Sensitive, Production + Preview. A new or changed variable needs a new deployment (Redeploy).
+- **Function logs:** Vercel project → Logs.
+- **Spend limit:** Anthropic Console → Settings → Billing → Spend limits. The Usage page shows tokens and cost per day.
+- **Testing the API:** `curl` in a second terminal while `vercel dev` runs.
 - **Reset data:** DevTools → Application → Local Storage → `brew-it-recipes`, or run `localStorage.removeItem("brew-it-recipes")` and reload.
 - `Array.prototype.reverse()` and `sort()` **mutate**: always `slice()` first. Never mutate state; use `map`/`filter`/spread.
 - `onClick={() => fn(id)}`, never `onClick={fn(id)}` (that runs during render).
@@ -189,6 +227,7 @@ npm run build    # also catches import errors
 ## 10. Note for the reviewer
 
 - Run git with `--no-optional-locks` (a leftover `.git/index.lock` blocked git once).
+- Never open or print `.env` / `.env.local` (they hold the API key); check variable names only.
 - Review trigger phrase: **"review the uncommitted changes"**.
 - The reviewer (Claude in the desktop app) answers in simple, user-friendly language and writes the prompts for Claude Code.
 - The reviewer's shell runs on Linux, so `npm run build` and Prettier can't run there (Mac `node_modules`); `npm run lint` can.
