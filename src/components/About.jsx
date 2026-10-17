@@ -14,16 +14,19 @@ function About() {
         you brew now, so you can see what changed.
       </p>
       <p>
-        Your recipes are saved only in this browser, on this device. Nothing is
-        sent anywhere, and clearing your browser data will delete them.
+        Your recipes are saved only in this browser, on this device. Clearing
+        your browser data will delete them. When you use Ask AI, that one recipe
+        and your question are sent to an AI (Anthropic's Claude) to get an
+        answer. Brew It doesn't save them.
       </p>
       <p>
-        Coming soon: an AI assistant that suggests improvements to your recipes
-        and helps you create new ones.
+        Ask AI is here: ask a question about any recipe, like how to make it
+        less bitter or a pour plan, and get suggestions to try as a new version.
+        AI answers can be wrong. Coming soon: creating new recipes with AI.
       </p>
       <p>
         Built by Roey Madjar, a junior frontend developer, as a portfolio
-        project. Made with React.
+        project. Made with React and the Claude API.
       </p>
       <p>
         <a
