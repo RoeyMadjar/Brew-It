@@ -43,8 +43,8 @@ export function formatRating(rating) {
 }
 
 export function formatRatio(version) {
-  if (version.doseGrams > 0 && version.waterGrams > 0) {
-    return `1:${(version.waterGrams / version.doseGrams).toFixed(1)}`;
+  if (version.doseGrams > 0 && version.yieldGrams > 0) {
+    return `1:${(version.yieldGrams / version.doseGrams).toFixed(1)}`;
   }
   return "—";
 }

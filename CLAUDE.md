@@ -4,7 +4,8 @@ Read `md-files/HANDOFF.md` at the start of every session. It is the source
 of truth for project state, architecture and decisions.
 
 ## Workflow
-1. Explain the plan in simple language, then wait for my approval.
+
+1. Explain the plan in simple language, never use plan mode. Write the plan as a normal message and wait for my reply. Then make each edit with the normal edit tool, one at a time, so I approve every diff (yes / yes + auto mode / no). Never switch to auto-accepting edits.
 2. Small, focused changes. No unrelated refactors, features or libraries.
 3. After changes: run `npm run lint` and `npm run build` and say you did not
    test in a browser. Give manual test steps only when the change needs
@@ -12,6 +13,7 @@ of truth for project state, architecture and decisions.
 4. Never commit. I test and commit (one commit per feature).
 
 ## How to answer
+
 - Be brief and focused. Start with the answer or plan: no intro, no
   restating my request, no closing summary.
 - Plans: numbered steps, one line each, naming the files that change.
@@ -25,5 +27,6 @@ of truth for project state, architecture and decisions.
   test steps (if needed) as a short checklist.
 
 ## Docs
+
 - Update HANDOFF.md only when I ask.
 - Don't edit this file unless I ask.

@@ -190,21 +190,6 @@ function RecipeEditForm({
           </dd>
         </div>
         <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-water`}>Water (g)</label>
-          </dt>
-          <dd>
-            <input
-              id={`${id}-water`}
-              type="number"
-              name="waterGrams"
-              step="any"
-              value={formData.waterGrams}
-              onChange={handleChange}
-            />
-          </dd>
-        </div>
-        <div className="version-field">
           <dt>Ratio</dt>
           <dd>{formatRatio(formToVersionFields(formData))}</dd>
         </div>

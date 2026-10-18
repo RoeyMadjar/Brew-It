@@ -1,7 +1,7 @@
 import VersionField from "./VersionField.jsx";
 import VersionSummary from "./VersionSummary.jsx";
 import { getChangedFields } from "../utils/compare.js";
-import { formatGrams, formatRatio, formatTemp } from "../utils/format.js";
+import { formatRatio, formatTemp } from "../utils/format.js";
 
 function VersionDetails({ version, compareTo }) {
   const changed = compareTo ? getChangedFields(version, compareTo) : null;
@@ -17,13 +17,6 @@ function VersionDetails({ version, compareTo }) {
           compareTo={compareTo}
           isChanged={changed?.grindSize}
           format={(v) => v.grindSize}
-        />
-        <VersionField
-          label="Water"
-          version={version}
-          compareTo={compareTo}
-          isChanged={changed?.waterGrams}
-          format={(v) => formatGrams(v.waterGrams)}
         />
         <VersionField
           label="Ratio"

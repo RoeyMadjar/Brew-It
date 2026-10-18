@@ -9,7 +9,6 @@ function normalizeText(text) {
 export function getChangedFields(version, current) {
   return {
     doseGrams: version.doseGrams !== current.doseGrams,
-    waterGrams: version.waterGrams !== current.waterGrams,
     ratio: formatRatio(version) !== formatRatio(current),
     grindSize:
       normalizeText(version.grindSize) !== normalizeText(current.grindSize),

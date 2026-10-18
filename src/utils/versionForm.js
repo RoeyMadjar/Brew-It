@@ -21,7 +21,6 @@ function formToBrewTimeSeconds(formData) {
 export function formToVersionFields(formData) {
   return {
     doseGrams: Number(formData.doseGrams),
-    waterGrams: toNumberOrNull(formData.waterGrams),
     grindSize: formData.grindSize,
     waterTempC: toNumberOrNull(formData.waterTempC),
     brewTimeSeconds: formToBrewTimeSeconds(formData),
@@ -37,7 +36,6 @@ export function versionToFormValues(version) {
 
   return {
     doseGrams: String(version.doseGrams),
-    waterGrams: toFormString(version.waterGrams),
     grindSize: version.grindSize,
     waterTempC: toFormString(version.waterTempC),
     brewTime:
