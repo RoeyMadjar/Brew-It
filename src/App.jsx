@@ -176,7 +176,13 @@ function App() {
     if (blockIfEditing()) {
       return;
     }
-    if (!window.confirm("Delete this recipe? This can't be undone.")) {
+    const recipeToDelete = recipes.find((recipe) => recipe.id === idToDelete);
+    const versionCount = recipeToDelete.versions.length;
+    const message =
+      versionCount === 1
+        ? `Delete "${recipeToDelete.name}" and its only version? This can't be undone.`
+        : `Delete "${recipeToDelete.name}" and all its ${versionCount} versions? This can't be undone.`;
+    if (!window.confirm(message)) {
       return;
     }
 
@@ -187,7 +193,17 @@ function App() {
     if (blockIfEditing()) {
       return;
     }
-    if (!window.confirm("Delete this version? This can't be undone.")) {
+    const recipeToEdit = recipes.find((recipe) => recipe.id === recipeId);
+    const versionIndex = recipeToEdit.versions.findIndex(
+      (version) => version.id === versionId,
+    );
+    const lastIndex = recipeToEdit.versions.length - 1;
+    const isCurrent = versionIndex === lastIndex;
+    // Version numbers count from the oldest version (Version 1).
+    const message = isCurrent
+      ? `Delete the current version of "${recipeToEdit.name}"? This can't be undone.`
+      : `Delete Version ${versionIndex + 1} of "${recipeToEdit.name}"? This can't be undone.`;
+    if (!window.confirm(message)) {
       return;
     }
 
@@ -205,7 +221,12 @@ function App() {
       }),
     );
 
-    if (expandedVersionId === versionId) {
+    // Deleting the current version makes the newest history version current,
+    // so it leaves the history and can't stay the expanded one.
+    const newCurrentId = isCurrent
+      ? recipeToEdit.versions[lastIndex - 1].id
+      : null;
+    if (expandedVersionId === versionId || expandedVersionId === newCurrentId) {
       setExpandedVersionId(null);
     }
   }
@@ -433,11 +454,21 @@ function App() {
                           >
                             Edit
                           </button>
+                          {recipe.versions.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleDeleteVersion(recipe.id, latestVersion.id)
+                              }
+                            >
+                              Delete Version
+                            </button>
+                          )}
                           <button
                             type="button"
                             onClick={() => handleDelete(recipe.id)}
                           >
-                            Delete
+                            Delete Recipe
                           </button>
                         </div>
                       </>
@@ -537,7 +568,7 @@ function App() {
                                   handleDeleteVersion(recipe.id, version.id)
                                 }
                               >
-                                Delete
+                                Delete Version
                               </button>
                             </div>
                           </>
