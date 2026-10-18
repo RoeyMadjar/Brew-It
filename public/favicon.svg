@@ -1,6 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#3b2f2f"/>
-  <path d="M25 7c-3.5 4 3.5 7 0 11M36 7c-3.5 4 3.5 7 0 11" fill="none" stroke="#ffd46b" stroke-width="4" stroke-linecap="round"/>
-  <path d="M46 30h2a7.5 7.5 0 0 1 0 15h-5" fill="none" stroke="#faf7f2" stroke-width="5"/>
-  <path d="M10 23h38v13c0 10.5-8.5 19-19 19S10 46.5 10 36z" fill="#faf7f2"/>
+<defs>
+<radialGradient id="bg" cx="35%" cy="25%" r="90%"><stop offset="0" stop-color="#3B2416"/><stop offset="1" stop-color="#120A06"/></radialGradient>
+<linearGradient id="c1" gradientUnits="userSpaceOnUse" x1="0" y1="16" x2="0" y2="38"><stop offset="0" stop-color="#F6E6CC"/><stop offset="1" stop-color="#D9A26A"/></linearGradient>
+<linearGradient id="c2" gradientUnits="userSpaceOnUse" x1="0" y1="40" x2="0" y2="64"><stop offset="0" stop-color="#D9A26A"/><stop offset="1" stop-color="#9A5B2E"/></linearGradient>
+<linearGradient id="st" gradientUnits="userSpaceOnUse" x1="0" y1="13" x2="0" y2="2"><stop offset="0" stop-color="#F6E6CC"/><stop offset="1" stop-color="#F6E6CC" stop-opacity=".35"/></linearGradient>
+</defs>
+<rect width="64" height="64" rx="14" fill="url(#bg)"/>
+<g stroke-linecap="round" stroke-linejoin="round" transform="translate(32 32) scale(.8) translate(-34.5 -33.4)">
+<g fill="none" stroke="url(#st)" stroke-width="2.6">
+<path d="M23 12.5C20 9.5 26 7 23 3"/>
+<path d="M30 12.5C27 9.5 33 7 30 3"/>
+<path d="M37 12.5C34 9.5 40 7 37 3"/>
+</g>
+<path d="M11 16H48A18.5 22 0 0 1 11 16Z" fill="url(#c1)" stroke="url(#c1)" stroke-width="2"/>
+<path d="M46.2 16H49.4A4.6 4.6 0 0 1 49.4 25.2H45.7" fill="none" stroke="#F1DABA" stroke-width="3.5"/>
+<path d="M11 40H51A20 24 0 0 1 11 40Z" fill="url(#c2)" stroke="url(#c2)" stroke-width="2"/>
+<path d="M49 40H52.5A5 5 0 0 1 52.5 50H48.5" fill="none" stroke="#D9A26A" stroke-width="3.6"/>
+<path d="M14.5 21A14.5 17 0 0 0 20.5 33" fill="none" stroke="#FFF8EC" stroke-width="1.5" opacity=".6"/>
+</g>
 </svg>
