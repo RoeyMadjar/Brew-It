@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ask AI</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/brewit/tokens.css">
+<link rel="stylesheet" href="ds/brewit/components/bundle.css">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="{{outer}}">
+<div class="{{inner}}">
+  <sc-if value="{{framed}}" hint-placeholder-val="{{false}}">
+    <div class="ai-panel__head"><span class="bi-btn__spark" aria-hidden="true"></span><span class="bi-label bi-label--xs">Ask AI</span></div>
+  </sc-if>
+  <div class="ai">
+    <form class="ai__form" onSubmit="{{submit}}">
+      <label class="bi-field__label" for="{{qid}}">Your question</label>
+      <textarea class="bi-input bi-input--version ai__q" id="{{qid}}" placeholder="How can I make it less bitter?" required="required" maxLength="500" rows="3" value="{{question}}" onChange="{{onQuestion}}"></textarea>
+      <div class="ai__row">
+        <button type="submit" class="bi-btn bi-btn--primary bi-btn--sm" disabled="{{loading}}" aria-busy="{{busy}}">{{buttonLabel}}</button>
+      </div>
+    </form>
+    <p class="bi-visually-hidden" aria-live="polite">{{live}}</p>
+    <sc-if value="{{isError}}" hint-placeholder-val="{{false}}">
+      <div class="bi-error bi-enter" role="alert">
+        <span class="bi-error__icon" aria-hidden="true">!</span>
+        <span class="bi-error__label">Error</span>
+        <p class="bi-error__text">{{errorMessage}}</p>
+      </div>
+    </sc-if>
+    <sc-if value="{{isAnswer}}" hint-placeholder-val="{{false}}">
+      <div class="ai__answer bi-enter">
+        <p class="ai__text">{{answer}}</p>
+        <p class="ai__note"><span class="bi-btn__spark" aria-hidden="true"></span>AI suggestion. Try it as a New Version.</p>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"forceStatus":{"editor":"enum","options":["","idle","loading","answer","error"],"default":""},"fail":{"editor":"boolean","default":false},"recipe":{"editor":null},"framed":{"editor":null},"$preview":{"width":720,"height":420}}'>
+class Component extends DCLogic {
+  uid() {
+    if (!this._uid) this._uid = 'ai' + Math.random().toString(36).slice(2, 8);
+    return this._uid;
+  }
+  answerFor() {
+    const r = this.props.recipe;
+    const v = r && r.versions ? r.versions[r.versions.length - 1] : { doseGrams: 16, brewTimeSeconds: 28 };
+    return 'Bitterness usually means over-extraction. With ' + v.doseGrams + ' g in and ' + v.brewTimeSeconds + ' s, change one thing at a time:\n• Grind one step coarser and keep the dose.\n• Or stop the shot a little earlier.\n• Or lower the water by 1–2 °C.';
+  }
+  renderVals() {
+    const force = this.props.forceStatus || '';
+    const st = this.state || {};
+    const status = force || st.status || 'idle';
+    const question = st.question !== undefined ? st.question : (force && force !== 'idle' ? 'How can I make it less bitter?' : '');
+    const framed = this.props.framed !== false;
+    const loading = status === 'loading';
+    return {
+      framed: framed,
+      outer: framed ? 'stage' : '',
+      inner: framed ? 'bi-inset bi-inset--ai bi-grain ai-panel' : '',
+      qid: this.uid() + '-q',
+      question: question,
+      loading: loading,
+      busy: loading ? 'true' : 'false',
+      buttonLabel: loading ? 'Asking the AI…' : 'Ask',
+      live: loading ? 'Asking the AI…' : '',
+      isError: status === 'error',
+      isAnswer: status === 'success' || status === 'answer',
+      errorMessage: "Couldn't reach the AI. Check your connection and try again.",
+      answer: st.answer || this.answerFor(),
+      onQuestion: (e) => {
+        const t = e.target;
+        if (!(window.CSS && CSS.supports && CSS.supports('field-sizing', 'content'))) {
+          t.style.height = 'auto';
+          t.style.height = t.scrollHeight + 'px';
+        }
+        this.setState({ question: t.value });
+      },
+      submit: (e) => {
+        e.preventDefault();
+        const q = (question || '').trim();
+        if (q === '' || loading || force) return;
+        this.setState({ status: 'loading', answer: '' });
+        setTimeout(() => {
+          if (this.props.fail) this.setState({ status: 'error' });
+          else this.setState({ status: 'success', answer: this.answerFor() });
+        }, 1600);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Recipe form</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/brewit/tokens.css">
+<link rel="stylesheet" href="ds/brewit/components/bundle.css">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&amp;display=swap">
+<style>
+body{margin:0}
+@font-face { font-family: 'Chillax'; font-weight: 600; font-style: normal; font-display: swap; src: url('../fonts/Chillax-Semibold.woff2') format('woff2'), url('../fonts/Chillax-Semibold.woff') format('woff'); }
+</style>
+</helmet>
+<div class="{{outer}}">
+<div class="{{inner}}">
+<form class="rf rf--{{level}}" onSubmit="{{submit}}" onWheel="{{wheel}}">
+  <sc-if value="{{isRecipe}}" hint-placeholder-val="{{true}}">
+    <div class="rf__identity">
+      <div>
+        <input class="bi-input bi-input--recipe rf__name" type="text" name="name" aria-label="Recipe name" placeholder="Recipe's name" required="required" value="{{form.name}}" onChange="{{onField}}">
+        <sc-if value="{{hasSubtitle}}" hint-placeholder-val="{{true}}"><p class="rc__date">{{subtitle}}</p></sc-if>
+      </div>
+      <label class="bi-field">
+        <span class="bi-field__label">Bean:</span>
+        <input class="bi-input bi-input--recipe" type="text" name="bean" required="required" value="{{form.bean}}" onChange="{{onField}}">
+      </label>
+      <label class="bi-field">
+        <span class="bi-field__label">Method:</span>
+        <input class="bi-input bi-input--recipe" type="text" name="method" required="required" value="{{form.method}}" onChange="{{onField}}">
+      </label>
+    </div>
+  </sc-if>
+
+  <div class="rf__knobs">
+    <div class="rf__row rf__row--a">
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.dose}}">Dose (g)</label>
+        <input class="bi-input rf-input" id="{{ids.dose}}" type="number" name="doseGrams" required="required" min="0" step="any" value="{{form.doseGrams}}" onChange="{{onField}}">
+      </div>
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.yield}}">Yield (g)</label>
+        <input class="bi-input rf-input" id="{{ids.yield}}" type="number" name="yieldGrams" step="any" value="{{form.yieldGrams}}" onChange="{{onField}}">
+      </div>
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.time}}">Brew time</label>
+        <div class="rf__time">
+          <input class="bi-input rf-input" id="{{ids.time}}" type="number" name="brewTime" step="{{timeStep}}" value="{{form.brewTime}}" onChange="{{onField}}">
+          <select class="bi-input rf-input" aria-label="Brew time unit" name="brewTimeUnit" value="{{form.brewTimeUnit}}" onChange="{{onField}}">
+            <option value="seconds">sec</option>
+            <option value="minutes">min</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="rf__row rf__row--b">
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.grind}}">Grind size</label>
+        <input class="bi-input rf-input" id="{{ids.grind}}" type="text" name="grindSize" required="required" value="{{form.grindSize}}" onChange="{{onField}}">
+      </div>
+      <div class="bi-field">
+        <span class="bi-field__label">Ratio</span>
+        <output class="rf__ratio">{{ratio}}</output>
+      </div>
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.temp}}">Temp (°C)</label>
+        <input class="bi-input rf-input" id="{{ids.temp}}" type="number" name="waterTempC" step="any" value="{{form.waterTempC}}" onChange="{{onField}}">
+      </div>
+      <div class="bi-field">
+        <label class="bi-field__label" for="{{ids.rating}}">Rating (1–10)</label>
+        <input class="bi-input rf-input" id="{{ids.rating}}" type="number" name="rating" min="1" max="10" step="0.5" value="{{form.rating}}" onChange="{{onField}}">
+      </div>
+    </div>
+
+    <div class="bi-field">
+      <label class="bi-field__label" for="{{ids.notes}}">Tasting notes</label>
+      <textarea class="bi-input rf-input" id="{{ids.notes}}" name="tastingNotes" rows="3" value="{{form.tastingNotes}}" onChange="{{onField}}"></textarea>
+    </div>
+  </div>
+
+  <div class="rf__actions">
+    <button type="submit" class="bi-btn bi-btn--primary bi-btn--sm">{{submitLabel}}</button>
+    <button type="button" class="bi-btn bi-btn--quiet bi-btn--sm" onClick="{{cancel}}">Cancel</button>
+  </div>
+</form>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"level":{"editor":"enum","options":["recipe","version"],"default":"recipe"},"submitLabel":{"editor":"enum","options":["Save Recipe","Save Changes","Save Version"],"default":"Save Changes"},"initial":{"editor":null},"subtitle":{"editor":null},"onSave":{"editor":null},"onCancel":{"editor":null},"framed":{"editor":null},"$preview":{"width":960,"height":780}}'>
+class Component extends DCLogic {
+  uid() {
+    if (!this._uid) this._uid = 'rf' + Math.random().toString(36).slice(2, 8);
+    return this._uid;
+  }
+  sample() {
+    return { name: 'Morning Coffee', bean: 'San Rafael', method: 'Espresso', doseGrams: '16', grindSize: 'fine', waterTempC: '93', brewTime: '28', brewTimeUnit: 'seconds', yieldGrams: '40', rating: '8', tastingNotes: 'Balanced, bitter notes, a bit sour, nice finish.' };
+  }
+  form() {
+    const st = this.state && this.state.form;
+    return st || Object.assign({}, this.sample(), this.props.initial || {});
+  }
+  renderVals() {
+    const f = this.form();
+    const id = this.uid();
+    const level = this.props.level || 'recipe';
+    const framed = this.props.framed !== false;
+    const dose = Number(f.doseGrams);
+    const yld = f.yieldGrams === '' ? null : Number(f.yieldGrams);
+    const subtitle = this.props.subtitle !== undefined ? this.props.subtitle : (framed && level === 'recipe' ? 'Oct 18, 2026, 9:30 AM' : '');
+    return {
+      form: f,
+      level: level,
+      isRecipe: level === 'recipe',
+      outer: framed ? 'stage' : '',
+      inner: framed ? 'stage-card' : '',
+      subtitle: subtitle,
+      hasSubtitle: !!subtitle,
+      submitLabel: this.props.submitLabel || 'Save Changes',
+      timeStep: f.brewTimeUnit === 'minutes' ? 'any' : undefined,
+      ratio: dose > 0 && yld > 0 ? '1:' + (yld / dose).toFixed(1) : '—',
+      ids: { dose: id + '-dose', yield: id + '-yield', time: id + '-time', rating: id + '-rating', grind: id + '-grind', temp: id + '-temp', notes: id + '-notes' },
+      onField: (e) => {
+        const t = e.target;
+        if (t.type === 'text' && t.setCustomValidity) t.setCustomValidity(t.value.trim() === '' ? 'Please fill out this field.' : '');
+        const next = Object.assign({}, this.form());
+        next[t.name] = t.value;
+        this.setState({ form: next });
+      },
+      wheel: (e) => { if (e.target && e.target.type === 'number') e.target.blur(); },
+      submit: (e) => {
+        e.preventDefault();
+        const cur = this.form();
+        const trimmed = {};
+        Object.keys(cur).forEach((k) => { trimmed[k] = typeof cur[k] === 'string' ? cur[k].trim() : cur[k]; });
+        if (this.props.onSave) this.props.onSave(trimmed);
+      },
+      cancel: () => { if (this.props.onCancel) this.props.onCancel(); }
+    };
+  }
+}
+</script>
+</body>
+</html>

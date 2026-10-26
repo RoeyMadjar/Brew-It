@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Brew It</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/brewit/tokens.css">
+<link rel="stylesheet" href="ds/brewit/components/bundle.css">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&amp;family=IBM+Plex+Mono:wght@400;500&amp;family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&amp;display=swap">
+<style>
+body{margin:0}
+@font-face { font-family: 'Chillax'; font-weight: 700; font-style: normal; font-display: swap; src: url('../fonts/Chillax-Bold.woff2') format('woff2'), url('../fonts/Chillax-Bold.woff') format('woff'); }
+@font-face { font-family: 'Chillax'; font-weight: 600; font-style: normal; font-display: swap; src: url('../fonts/Chillax-Semibold.woff2') format('woff2'), url('../fonts/Chillax-Semibold.woff') format('woff'); }
+</style>
+</helmet>
+<div class="site" id="top" data-scene="{{scene}}" data-static="{{isStatic}}" data-p="{{p}}" data-settling="{{settlingStr}}" ref="{{setRoot}}">
+  <div class="bi-grain-page" aria-hidden="true"></div>
+
+  <header class="head">
+    <nav class="head__bar" aria-label="Main">
+      <ul class="head__links">
+        <li><a class="head__link" href="#recipes">Your recipes</a></li>
+        <li><a class="head__link" href="#about">About</a></li>
+      </ul>
+      <a class="head__logo-link" href="#top" aria-label="Brew It, back to top"><img class="head__logo" src="../images/logo.png" alt=""></a>
+    </nav>
+    <h1 class="head__h1" style="text-align: left"><a class="head__title" href="#top" style="text-align: left">Brew It</a></h1>
+  </header>
+
+  <main>
+    <sc-if value="{{showLanding}}" hint-placeholder-val="{{true}}">
+      <section class="sec landing bi-grain" data-gradient="{{landingGradient}}" aria-label="Welcome">
+        <div class="wrap landing__inner">
+          <p class="landing__tagline">Your Personal Coffee Journal</p>
+          <div class="landing__actions">
+            <a class="bi-btn bi-btn--primary" href="#recipes">Your recipes</a>
+            <a class="bi-btn bi-btn--secondary" href="#about">About</a>
+            <span class="bi-btn-with-note">
+              <button type="button" class="bi-btn" disabled="disabled" aria-describedby="ai-coming-soon">Create with AI</button>
+              <span class="bi-btn-note" id="ai-coming-soon">Coming soon</span>
+            </span>
+          </div>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{showRecipes}}" hint-placeholder-val="{{true}}">
+      <section class="sec sec--recipes bi-grain" id="recipes" data-glow="{{headingGlow}}" data-empty="{{emptyStr}}" aria-labelledby="recipes-title">
+        <div class="wrap">
+          <header class="rs-head">
+            <div class="bi-section-head__bar" aria-hidden="true"></div>
+            <div class="rs-head__row">
+              <h2 class="rs-head__title" id="recipes-title">Your recipes</h2>
+              <sc-if value="{{showCreateBtn}}" hint-placeholder-val="{{true}}">
+                <button type="button" class="bi-btn bi-btn--primary" onClick="{{openCreate}}">Create Recipe</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{searchInHead}}" hint-placeholder-val="{{false}}">
+              <div class="rs-search" role="search">
+                <svg class="rs-search__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
+                <input class="bi-input bi-input--recipe rs-search__input" type="search" aria-label="Search recipes by name, bean or method" placeholder="Search..." autocomplete="off" spellcheck="false" value="{{query}}" onChange="{{onSearch}}" ref="{{setSearch}}">
+                <sc-if value="{{hasQuery}}" hint-placeholder-val="{{false}}">
+                  <button type="button" class="rs-search__clear" aria-label="Clear search" onClick="{{clearSearch}}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+                </sc-if>
+              </div>
+            </sc-if>
+          </header>
+
+          <div class="recipe-grid" data-layout="{{layout}}">
+            <sc-if value="{{createMounted}}" hint-placeholder-val="{{false}}">
+              <div class="rc-wrap rc-wrap--create collapse" data-open="{{createShownStr}}">
+                <div>
+                  <article class="rc is-editing" aria-label="New recipe">
+                    <dc-import name="RecipeForm" level="recipe" initial="{{createInitial}}" subtitle="{{createSubtitle}}" submit-label="Save Recipe" on-save="{{saveCreate}}" on-cancel="{{cancelCreate}}" framed="{{no}}" hint-size="100%,420px"></dc-import>
+                  </article>
+                </div>
+              </div>
+            </sc-if>
+            <sc-if value="{{searchBelowCreate}}" hint-placeholder-val="{{false}}">
+              <div class="rs-search-slot">
+                <div class="rs-search" role="search">
+                  <svg class="rs-search__icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"></circle><path d="M15 15l5 5"></path></svg>
+                  <input class="bi-input bi-input--recipe rs-search__input" type="search" aria-label="Search recipes by name, bean or method" placeholder="Search..." autocomplete="off" spellcheck="false" value="{{query}}" onChange="{{onSearch}}" ref="{{setSearch}}">
+                  <sc-if value="{{hasQuery}}" hint-placeholder-val="{{false}}">
+                    <button type="button" class="rs-search__clear" aria-label="Clear search" onClick="{{clearSearch}}"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-for list="{{cards}}" as="r" hint-placeholder-count="4">
+              <div class="rc-wrap bi-removable {{r.removingClass}}" data-wide="{{r.wide}}" key="{{r.id}}">
+                <article class="{{r.cardClass}}">
+
+                  <sc-if value="{{r.er}}" hint-placeholder-val="{{false}}">
+                    <div class="form-slot {{r.formLeaving}}">
+                      <dc-import name="RecipeForm" level="recipe" initial="{{r.editInitial}}" subtitle="{{r.editSubtitle}}" submit-label="Save Changes" on-save="{{r.onSaveEdit}}" on-cancel="{{r.onCancel}}" framed="{{no}}" hint-size="100%,420px"></dc-import>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{r.showView}}" hint-placeholder-val="{{true}}">
+                    <div class="rc__body">
+                      <div class="rc__id">
+                        <div>
+                          <h3 class="rc__title">{{r.name}}</h3>
+                          <p class="rc__date">{{r.date}}</p>
+                        </div>
+                        <dl class="rc__meta">
+                          <dt>Bean:</dt><dd>{{r.bean}}</dd>
+                          <dt>Method:</dt><dd>{{r.method}}</dd>
+                        </dl>
+                      </div>
+
+                      <sc-if value="{{r.nv}}" hint-placeholder-val="{{false}}">
+                        <div class="form-slot {{r.formLeaving}}">
+                          <dc-import name="RecipeForm" level="version" initial="{{r.nvInitial}}" submit-label="Save Version" on-save="{{r.onSaveNew}}" on-cancel="{{r.onCancel}}" framed="{{no}}" hint-size="100%,360px"></dc-import>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{r.showData}}" hint-placeholder-val="{{true}}">
+                        <div class="rc__data">
+                          <dl class="rc__summary">
+                            <sc-for list="{{r.summary}}" as="f" hint-placeholder-count="4">
+                              <div class="bi-datafield">
+                                <dt class="bi-datafield__label">{{f.label}}<sc-if value="{{f.hasRest}}" hint-placeholder-val="{{false}}"><span class="lbl-rest">{{f.rest}}</span></sc-if></dt>
+                                <dd><span class="bi-datafield__value">{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span></dd>
+                              </div>
+                            </sc-for>
+                          </dl>
+                          <div class="collapse" data-open="{{r.expandedStr}}">
+                            <div>
+                              <dl class="rc__details">
+                                <sc-for list="{{r.details}}" as="f" hint-placeholder-count="3">
+                                  <div class="bi-datafield">
+                                    <dt class="bi-datafield__label">{{f.label}}<sc-if value="{{f.hasRest}}" hint-placeholder-val="{{false}}"><span class="lbl-rest">{{f.rest}}</span></sc-if></dt>
+                                    <dd><span class="bi-datafield__value">{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span></dd>
+                                  </div>
+                                </sc-for>
+                              </dl>
+                              <dl class="rc__notes">
+                                <dt>Tasting notes</dt>
+                                <dd>{{r.notes}}</dd>
+                              </dl>
+                            </div>
+                          </div>
+                        </div>
+                      </sc-if>
+                    </div>
+
+                    <sc-if value="{{r.showData}}" hint-placeholder-val="{{true}}">
+                      <div class="rc__actions">
+                        <button type="button" class="bi-btn bi-btn--secondary bi-btn--sm" aria-expanded="{{r.expandedStr}}" onClick="{{r.toggleExpand}}">{{r.viewLabel}}</button>
+                        <button type="button" class="bi-btn bi-btn--ai bi-btn--sm" aria-expanded="{{r.aiOpenStr}}" aria-controls="{{r.aiPanelId}}" onClick="{{r.toggleAi}}"><span class="bi-btn__spark" aria-hidden="true"></span>{{r.aiLabel}}</button>
+                        <div class="menu-anchor">
+                          <button type="button" class="bi-btn bi-btn--quiet bi-btn--sm more-btn" aria-haspopup="menu" aria-expanded="{{r.menuOpenStr}}" onClick="{{r.toggleMenu}}">More</button>
+                          <sc-if value="{{r.menuOpen}}" hint-placeholder-val="{{false}}">
+                            <div class="menu" role="menu" aria-label="More actions">
+                              <button type="button" role="menuitem" class="menu__item" onClick="{{r.newVersion}}">New Version</button>
+                              <button type="button" role="menuitem" class="menu__item" onClick="{{r.edit}}">Edit</button>
+                              <sc-if value="{{r.hasMultiple}}" hint-placeholder-val="{{true}}">
+                                <button type="button" role="menuitem" class="menu__item" onClick="{{r.deleteVersion}}">Delete Version</button>
+                              </sc-if>
+                              <div class="menu__sep" role="separator"></div>
+                              <button type="button" role="menuitem" class="menu__item menu__item--danger" onClick="{{r.deleteRecipe}}">Delete Recipe</button>
+                            </div>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-if>
+                  </sc-if>
+
+                  <sc-if value="{{r.aiMounted}}" hint-placeholder-val="{{false}}">
+                    <div class="collapse" data-open="{{r.aiOpenStr}}" id="{{r.aiPanelId}}">
+                      <div>
+                        <section class="bi-inset bi-inset--ai bi-grain ai-panel" aria-label="Ask AI">
+                          <div class="ai-panel__head"><span class="bi-btn__spark" aria-hidden="true"></span><span class="bi-label bi-label--xs">Ask AI</span></div>
+                          <dc-import name="AskAi" recipe="{{r.raw}}" force-status="{{aiForce}}" fail="{{aiFails}}" framed="{{no}}" hint-size="100%,200px"></dc-import>
+                        </section>
+                      </div>
+                    </div>
+                  </sc-if>
+
+                  <section class="bi-inset rc__vh" data-open="{{r.vhOpenStr}}">
+                    <div class="bi-inset__head">
+                      <button type="button" class="bi-inset__toggle" aria-expanded="{{r.vhOpenStr}}" aria-controls="{{r.vhId}}" onClick="{{r.toggleVh}}">
+                        <span class="vh__title"><span class="bi-inset__title">Version History</span><span class="vh__count">({{r.vhCount}})</span></span>
+                        <span class="bi-inset__chev" aria-hidden="true"></span>
+                      </button>
+                    </div>
+                    <div class="bi-inset__body" id="{{r.vhId}}">
+                      <div>
+                        <div class="bi-inset__content">
+                          <sc-for list="{{r.history}}" as="v" hint-placeholder-count="2">
+                            <div class="bi-removable {{v.removingClass}}" key="{{v.id}}">
+                              <div>
+                                <div class="{{v.rowClass}}">
+                                  <div class="vrow__head">
+                                    <h4 class="vrow__v">Version {{v.n}}</h4>
+                                    <span class="rc__date">{{v.date}}</span>
+                                  </div>
+                                  <sc-if value="{{v.editing}}" hint-placeholder-val="{{false}}">
+                                    <div class="form-slot {{v.formLeaving}}">
+                                      <dc-import name="RecipeForm" level="version" initial="{{v.initial}}" submit-label="Save Changes" on-save="{{v.onSave}}" on-cancel="{{v.onCancel}}" framed="{{no}}" hint-size="100%,320px"></dc-import>
+                                    </div>
+                                  </sc-if>
+                                  <sc-if value="{{v.notEditing}}" hint-placeholder-val="{{true}}">
+                                    <dl class="rc__summary">
+                                      <sc-for list="{{v.summary}}" as="f" hint-placeholder-count="4">
+                                        <div class="bi-datafield">
+                                          <dt class="bi-datafield__label">{{f.label}}<sc-if value="{{f.hasRest}}" hint-placeholder-val="{{false}}"><span class="lbl-rest">{{f.rest}}</span></sc-if></dt>
+                                          <dd>
+                                            <sc-if value="{{f.changed}}" hint-placeholder-val="{{false}}">
+                                              <span class="bi-changed">
+                                                <span class="bi-datafield__value bi-changed__value"><span class="bi-visually-hidden">Changed: </span>{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span>
+                                                <span class="bi-changed__now">now <b>{{f.nowV}}<sc-if value="{{f.nowHasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.nowU}}</span></sc-if></b></span>
+                                              </span>
+                                            </sc-if>
+                                            <sc-if value="{{f.plain}}" hint-placeholder-val="{{true}}">
+                                              <span class="bi-datafield__value">{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span>
+                                            </sc-if>
+                                          </dd>
+                                        </div>
+                                      </sc-for>
+                                    </dl>
+                                    <div class="collapse" data-open="{{v.expandedStr}}">
+                                      <div>
+                                        <dl class="rc__details">
+                                          <sc-for list="{{v.details}}" as="f" hint-placeholder-count="3">
+                                            <div class="bi-datafield">
+                                              <dt class="bi-datafield__label">{{f.label}}<sc-if value="{{f.hasRest}}" hint-placeholder-val="{{false}}"><span class="lbl-rest">{{f.rest}}</span></sc-if></dt>
+                                              <dd>
+                                                <sc-if value="{{f.changed}}" hint-placeholder-val="{{false}}">
+                                                  <span class="bi-changed">
+                                                    <span class="bi-datafield__value bi-changed__value"><span class="bi-visually-hidden">Changed: </span>{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span>
+                                                    <span class="bi-changed__now">now <b>{{f.nowV}}<sc-if value="{{f.nowHasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.nowU}}</span></sc-if></b></span>
+                                                  </span>
+                                                </sc-if>
+                                                <sc-if value="{{f.plain}}" hint-placeholder-val="{{true}}">
+                                                  <span class="bi-datafield__value">{{f.v}}<sc-if value="{{f.hasU}}" hint-placeholder-val="{{true}}"><span class="bi-unit">{{f.u}}</span></sc-if></span>
+                                                </sc-if>
+                                              </dd>
+                                            </div>
+                                          </sc-for>
+                                        </dl>
+                                        <dl class="rc__notes">
+                                          <dt>Tasting notes</dt>
+                                          <dd>{{v.notes}}</dd>
+                                        </dl>
+                                      </div>
+                                    </div>
+                                    <div class="vrow__actions">
+                                      <button type="button" class="bi-btn bi-btn--quiet bi-btn--sm" aria-expanded="{{v.expandedStr}}" onClick="{{v.toggle}}">{{v.viewLabel}}</button>
+                                      <button type="button" class="bi-btn bi-btn--quiet bi-btn--sm" onClick="{{v.edit}}">Edit</button>
+                                      <button type="button" class="bi-btn bi-btn--quiet bi-btn--sm btn-del" onClick="{{v.del}}">Delete Version</button>
+                                    </div>
+                                  </sc-if>
+                                </div>
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </section>
+
+                </article>
+              </div>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{isEmpty}}" hint-placeholder-val="{{false}}">
+            <p class="empty-note">No recipes yet</p>
+          </sc-if>
+          <sc-if value="{{noResults}}" hint-placeholder-val="{{false}}">
+            <p class="empty-note empty-note--search" role="status">No recipes</p>
+          </sc-if>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{showAbout}}" hint-placeholder-val="{{true}}">
+      <section class="sec sec--about bi-grain" id="about" data-ground="{{aboutGround}}" aria-labelledby="about-title">
+        <div class="wrap about">
+          <h2 class="about__title" id="about-title">About</h2>
+          <div class="about__body">
+            <p class="about__lead">Brew It is a coffee journal for people who like to experiment. Save your recipes, record every brew, and keep track of what you change along the way.</p>
+            <div class="about__cols">
+              <p>Every recipe has versions. When you try something new, like a finer grind or a different dose, save it as a new version, and your old ones stay in the history. Older versions highlight what's different from what you brew now, so you can see what changed.</p>
+              <p>Your recipes are saved only in this browser, on this device. Clearing your browser data will delete them. When you use Ask AI, that one recipe and your question are sent to an AI (Anthropic's Claude) to get an answer. Brew It doesn't save them.</p>
+              <p>Ask AI is here: ask a question about any recipe, like how to make it less bitter or a pour plan, and get suggestions to try as a new version. AI answers can be wrong. Coming soon: creating new recipes with AI.</p>
+            </div>
+          </div>
+          <footer class="about__foot">
+            <p class="about__credit">Built by Roey Madjar, a junior frontend developer, as a portfolio project. Made with React and the Claude API.</p>
+            <p class="about__links">
+              <a class="bi-link" href="https://github.com/RoeyMadjar" target="_blank" rel="noopener noreferrer">GitHub</a>
+              <span aria-hidden="true">·</span>
+              <a class="bi-link" href="https://www.linkedin.com/in/roey-madjar/" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            </p>
+          </footer>
+        </div>
+      </section>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;scene&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;full&quot;,&quot;landing&quot;,&quot;nav&quot;,&quot;recipes&quot;,&quot;forms&quot;,&quot;formsVersion&quot;,&quot;list&quot;,&quot;empty&quot;,&quot;about&quot;,&quot;changes&quot;],&quot;default&quot;:&quot;full&quot;},&quot;progress&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;0&quot;,&quot;0.5&quot;,&quot;1&quot;],&quot;default&quot;:&quot;1&quot;},&quot;layout&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;grid&quot;,&quot;list&quot;],&quot;default&quot;:&quot;list&quot;,&quot;section&quot;:&quot;Options&quot;},&quot;landingGradient&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;ember&quot;,&quot;dusk&quot;,&quot;flat&quot;],&quot;default&quot;:&quot;ember&quot;,&quot;section&quot;:&quot;Options&quot;},&quot;aboutGround&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;horizon&quot;,&quot;flat&quot;],&quot;default&quot;:&quot;horizon&quot;,&quot;section&quot;:&quot;Options&quot;},&quot;headingGlow&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;section&quot;:&quot;Options&quot;},&quot;aiFails&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;section&quot;:&quot;Options&quot;},&quot;search&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;section&quot;:&quot;Options&quot;},&quot;searchQuery&quot;:{&quot;editor&quot;:null},&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:3700}}">
+class Component extends DCLogic {
+  scene() { return this.props.scene || 'full'; }
+
+  seed() {
+    const v = (id, at, d, g, t, s, unit, y, r, n) => ({ id: id, createdAt: at, doseGrams: d, grindSize: g, waterTempC: t, brewTimeSeconds: s, brewTimeUnit: unit, yieldGrams: y, rating: r, tastingNotes: n });
+    /* Stress test: every value differs between the first version and the current one */
+    if (this.scene() === 'changes') return [
+      { id: 'r1', name: 'Morning Coffee', bean: 'San Rafael', method: 'Pour over', createdAt: '2026-09-20T08:00:00.000Z', versions: [
+        v('r1v1', '2026-09-20T08:00:00.000Z', 18, 'medium-fine', 92, 32, 'seconds', 36, 6, 'Heavy and bitter, short finish.'),
+        v('r1v2', '2026-10-18T07:30:00.000Z', 22.5, 'coarse', 96, 255, 'minutes', 360, 9.5, 'Sweet and clean, long finish.')
+      ] }
+    ];
+    return [
+      { id: 'r1', name: 'Morning Coffee', bean: 'San Rafael', method: 'Espresso', createdAt: '2026-09-20T08:00:00.000Z', versions: [
+        v('r1v1', '2026-09-20T08:00:00.000Z', 18, 'medium-fine', 92, 32, 'seconds', 36, 6, 'Heavy and bitter, short finish.'),
+        v('r1v2', '2026-10-02T07:40:00.000Z', 16, 'fine', 93, 30, 'seconds', 36, 7, 'Less bitter, still a little sour.'),
+        v('r1v3', '2026-10-18T07:30:00.000Z', 16, 'fine', 93, 28, 'seconds', 40, 8, 'Balanced, bitter notes, a bit sour, nice finish.')
+      ] },
+      { id: 'r2', name: 'Weekend V60', bean: 'Ethiopia Guji', method: 'Pour over', createdAt: '2026-09-12T09:15:00.000Z', versions: [
+        v('r2v1', '2026-09-12T09:15:00.000Z', 15, 'medium', 94, 180, 'minutes', 240, 7, 'Bright, a bit thin.'),
+        v('r2v2', '2026-10-11T09:05:00.000Z', 15, 'medium-fine', 94, 195, 'minutes', 250, 9, 'Peach and black tea, sweet finish.')
+      ] },
+      { id: 'r3', name: 'Iced AeroPress', bean: 'Colombia Huila', method: 'AeroPress', createdAt: '2026-08-30T15:20:00.000Z', versions: [
+        v('r3v1', '2026-08-30T15:20:00.000Z', 17, 'medium-fine', 85, 90, 'seconds', 200, 7, 'Chocolate and cola. Good over ice.')
+      ] },
+      { id: 'r4', name: 'Cold Brew Batch', bean: 'Brazil Cerrado', method: 'Cold brew', createdAt: '2026-08-02T18:00:00.000Z', versions: [
+        v('r4v1', '2026-08-02T18:00:00.000Z', 100, 'coarse', null, 57600, 'minutes', 700, 8, 'Smooth and nutty, low acid.'),
+        v('r4v2', '2026-08-20T18:30:00.000Z', 90, 'coarse', null, 57600, 'minutes', 700, 8, 'Slightly lighter, cleaner.')
+      ] }
+    ];
+  }
+
+  base() {
+    const sc = this.scene();
+    if (this._base && this._baseScene === sc) return this._base;
+    const b = { recipes: sc === 'empty' ? [] : this.seed(), expandedRecipeId: null, expandedVersionId: null, vhOpen: {}, menuId: null, activeForm: null, leaving: false, createShown: false, aiId: null, aiShown: false, removing: null, removingVersion: null, query: this.props.searchQuery || '' };
+    if (sc === 'recipes') Object.assign(b, { expandedRecipeId: 'r1', expandedVersionId: 'r1v2', vhOpen: { r1: true }, aiId: 'r1', aiShown: true, menuId: 'r2' });
+    if (sc === 'changes') Object.assign(b, { expandedRecipeId: 'r1', expandedVersionId: 'r1v1', vhOpen: { r1: true } });
+    if (sc === 'forms') Object.assign(b, { activeForm: { type: 'create' }, createShown: true });
+    if (sc === 'formsVersion') Object.assign(b, { activeForm: { type: 'newVersion', recipeId: 'r1', wasExpanded: false }, expandedRecipeId: 'r1' });
+    this._base = b;
+    this._baseScene = sc;
+    return b;
+  }
+  s() {
+    const st = this.state;
+    return Object.assign({}, this.base(), st && st.__scene === this.scene() ? st : {});
+  }
+  set(patch, cb) {
+    const st = this.state;
+    const fresh = !(st && st.__scene === this.scene());
+    this.setState(Object.assign({}, fresh ? this.base() : {}, patch, { __scene: this.scene() }), cb);
+  }
+  reduced() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } }
+  wait(ms) { return this.reduced() ? 0 : ms; }
+  next(fn) { requestAnimationFrame(() => requestAnimationFrame(fn)); }
+  blocked() { const s = this.s(); return !!s.activeForm || !!s.removing; }
+
+  /* ---------- formatting (mirrors utils/format.js) ---------- */
+  date(iso) { try { return new Date(iso).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return iso; } }
+  ratio(v) { return v.doseGrams > 0 && v.yieldGrams > 0 ? '1:' + (v.yieldGrams / v.doseGrams).toFixed(1) : '—'; }
+  parts(kind, v) {
+    if (kind === 'dose') return v.doseGrams == null ? ['—', ''] : [String(v.doseGrams), 'g'];
+    if (kind === 'yield') return v.yieldGrams == null ? ['—', ''] : [String(v.yieldGrams), 'g'];
+    if (kind === 'time') {
+      const s = v.brewTimeSeconds;
+      if (s == null) return ['—', ''];
+      return (v.brewTimeUnit || 'seconds') === 'minutes' ? [String(Number((s / 60).toFixed(2))), 'min'] : [String(s), 's'];
+    }
+    if (kind === 'rating') return v.rating == null ? ['—', ''] : [v.rating + '/10', ''];
+    if (kind === 'grind') return [v.grindSize || '—', ''];
+    if (kind === 'ratio') return [this.ratio(v), ''];
+    if (kind === 'temp') return v.waterTempC == null ? ['—', ''] : [String(v.waterTempC), '°C'];
+    return ['—', ''];
+  }
+  isChanged(kind, v, c) {
+    const n = (t) => String(t || '').trim().toLowerCase();
+    if (kind === 'dose') return v.doseGrams !== c.doseGrams;
+    if (kind === 'yield') return v.yieldGrams !== c.yieldGrams;
+    if (kind === 'time') return v.brewTimeSeconds !== c.brewTimeSeconds;
+    if (kind === 'rating') return v.rating !== c.rating;
+    if (kind === 'grind') return n(v.grindSize) !== n(c.grindSize);
+    if (kind === 'ratio') return this.ratio(v) !== this.ratio(c);
+    if (kind === 'temp') return v.waterTempC !== c.waterTempC;
+    return false;
+  }
+  field(label, kind, v, cmp) {
+    const a = this.parts(kind, v);
+    const ch = !!cmp && this.isChanged(kind, v, cmp);
+    const b = ch ? this.parts(kind, cmp) : ['', ''];
+    return { label: label, v: a[0], u: a[1], hasU: !!a[1], changed: ch, plain: !ch, nowV: b[0], nowU: b[1], nowHasU: !!b[1] };
+  }
+  summary(v, c) { return [this.field('Dose', 'dose', v, c), this.field('Yield', 'yield', v, c), this.field('Brew time', 'time', v, c), this.field('Rating', 'rating', v, c)]; }
+  details(v, c) {
+    /* "Temp" + "erature": the ending hides on narrow cards so the label reads "Temp" on phones, "Temperature" on desktop */
+    const t = Object.assign(this.field('Temp', 'temp', v, c), { rest: 'erature', hasRest: true });
+    return [this.field('Grind size', 'grind', v, c), this.field('Ratio', 'ratio', v, c), t];
+  }
+
+  /* ---------- form <-> version (mirrors utils/versionForm.js) ---------- */
+  toVersion(f) {
+    const num = (x) => (x === '' ? null : Number(x));
+    const secs = f.brewTime === '' ? null : Math.round(Number(f.brewTime) * (f.brewTimeUnit === 'minutes' ? 60 : 1));
+    return { doseGrams: Number(f.doseGrams), grindSize: f.grindSize, waterTempC: num(f.waterTempC), brewTimeSeconds: secs, brewTimeUnit: f.brewTimeUnit, yieldGrams: num(f.yieldGrams), rating: num(f.rating), tastingNotes: f.tastingNotes };
+  }
+  toForm(v) {
+    const u = v.brewTimeUnit || 'seconds';
+    const str = (x) => (x === null || x === undefined ? '' : String(x));
+    return { doseGrams: String(v.doseGrams), grindSize: v.grindSize, waterTempC: str(v.waterTempC), brewTime: u === 'minutes' && v.brewTimeSeconds !== null ? String(Number((v.brewTimeSeconds / 60).toFixed(2))) : str(v.brewTimeSeconds), brewTimeUnit: u, yieldGrams: str(v.yieldGrams), rating: str(v.rating), tastingNotes: v.tastingNotes };
+  }
+  uid() { return 'id-' + Math.random().toString(36).slice(2, 10); }
+  mapRecipe(id, fn) { return this.s().recipes.map((r) => (r.id === id ? fn(r) : r)); }
+
+  /* ---------- actions ---------- */
+  toggleExpand(id) { const s = this.s(); this.set({ expandedRecipeId: s.expandedRecipeId === id ? null : id, menuId: null }); }
+  toggleVersion(vid) { const s = this.s(); this.set({ expandedVersionId: s.expandedVersionId === vid ? null : vid }); }
+  toggleMenu(id) { const s = this.s(); this.set({ menuId: s.menuId === id ? null : id }); }
+  toggleVh(id, editingHere) {
+    if (editingHere) return;
+    const m = Object.assign({}, this.s().vhOpen);
+    m[id] = !m[id];
+    this.set({ vhOpen: m });
+  }
+  toggleAi(id) {
+    const s = this.s();
+    clearTimeout(this._aiT);
+    if (s.aiId === id && s.aiShown) {
+      this.set({ aiShown: false });
+      this._aiT = setTimeout(() => this.set({ aiId: null }), this.wait(300));
+      return;
+    }
+    this.set({ aiId: id, aiShown: false, menuId: null }, () => this.next(() => this.set({ aiShown: true })));
+  }
+  openForm(form, extra) {
+    if (this.blocked()) return;
+    this.set(Object.assign({ activeForm: form, menuId: null, leaving: false }, extra || {}));
+  }
+  startNewVersion(id, isExp) { this.openForm({ type: 'newVersion', recipeId: id, wasExpanded: isExp }, { expandedRecipeId: id }); }
+  startEditRecipe(id, isExp) { this.openForm({ type: 'editRecipe', recipeId: id, wasExpanded: isExp }, { expandedRecipeId: id }); }
+  startEditVersion(rid, vid, isExp) { this.openForm({ type: 'editVersion', recipeId: rid, versionId: vid, wasExpanded: isExp }, { expandedVersionId: vid }); }
+  closeForm(after) {
+    this.set({ leaving: true });
+    setTimeout(() => {
+      const s = this.s();
+      const extra = s.activeForm && after ? after(s) : {};
+      this.set(Object.assign({ activeForm: null, leaving: false }, extra));
+    }, this.wait(170));
+  }
+  cancelRecipeForm(id) { this.closeForm((s) => (!s.activeForm.wasExpanded && s.expandedRecipeId === id ? { expandedRecipeId: null } : {})); }
+  cancelVersionForm(vid) { this.closeForm((s) => (!s.activeForm.wasExpanded && s.expandedVersionId === vid ? { expandedVersionId: null } : {})); }
+  openCreate() {
+    if (this.blocked()) return;
+    this.set({ activeForm: { type: 'create' }, createShown: false, menuId: null }, () => this.next(() => this.set({ createShown: true })));
+  }
+  closeCreate(patch) {
+    this.set(Object.assign({ createShown: false }, patch || {}));
+    setTimeout(() => this.set({ activeForm: null }), this.wait(280));
+  }
+  saveCreate(f) {
+    const at = new Date().toISOString();
+    const r = { id: this.uid(), createdAt: at, name: f.name, bean: f.bean, method: f.method, versions: [Object.assign({ id: this.uid(), createdAt: at }, this.toVersion(f))] };
+    this.closeCreate({ recipes: this.s().recipes.concat([r]) });
+  }
+  saveNewVersion(id, f) {
+    const nv = Object.assign({ id: this.uid(), createdAt: new Date().toISOString() }, this.toVersion(f));
+    this.set({ recipes: this.mapRecipe(id, (r) => Object.assign({}, r, { versions: r.versions.concat([nv]) })), activeForm: null, expandedRecipeId: id });
+  }
+  saveRecipeEdit(id, f) {
+    this.set({ recipes: this.mapRecipe(id, (r) => {
+      const last = r.versions.length - 1;
+      return Object.assign({}, r, { name: f.name, bean: f.bean, method: f.method, versions: r.versions.map((v, i) => (i === last ? Object.assign({}, v, this.toVersion(f)) : v)) });
+    }), activeForm: null, expandedRecipeId: id });
+  }
+  saveVersionEdit(rid, vid, f) {
+    this.set({ recipes: this.mapRecipe(rid, (r) => Object.assign({}, r, { versions: r.versions.map((v) => (v.id === vid ? Object.assign({}, v, this.toVersion(f)) : v)) })), activeForm: null, expandedVersionId: vid });
+  }
+  /* The real app asks window.confirm() first; the prototype skips the dialog. */
+  deleteRecipe(id) {
+    if (this.blocked()) return;
+    this.set({ removing: id, menuId: null });
+    setTimeout(() => {
+      const s = this.s();
+      /* settling: one frame with transitions off, so the cards below don't replay an open animation */
+      this.set({ recipes: s.recipes.filter((r) => r.id !== id), removing: null, aiId: s.aiId === id ? null : s.aiId, settling: true }, () => this.next(() => this.set({ settling: false })));
+    }, this.wait(340));
+  }
+  deleteVersion(rid, vid) {
+    if (this.blocked()) return;
+    const r = this.s().recipes.find((x) => x.id === rid);
+    const idx = r.versions.findIndex((v) => v.id === vid);
+    const last = r.versions.length - 1;
+    const isCurrent = idx === last;
+    const newCurrent = isCurrent ? r.versions[last - 1].id : null;
+    const finish = () => {
+      const s2 = this.s();
+      const upd = { recipes: s2.recipes.map((x) => (x.id === rid ? Object.assign({}, x, { versions: x.versions.filter((v) => v.id !== vid) }) : x)), removingVersion: null, menuId: null };
+      if (s2.expandedVersionId === vid || s2.expandedVersionId === newCurrent) upd.expandedVersionId = null;
+      upd.settling = true;
+      this.set(upd, () => this.next(() => this.set({ settling: false })));
+    };
+    if (isCurrent) { finish(); return; }
+    this.set({ removingVersion: vid });
+    setTimeout(finish, this.wait(340));
+  }
+
+  /* ---------- scroll: title shrinks into the navbar ---------- */
+  componentDidMount() {
+    if (this.scene() !== 'full') return;
+    this._onScroll = (e) => {
+      const el = this._root || document.querySelector('.site[data-scene="full"]');
+      if (!el) return;
+      const t = e && e.target;
+      /* Only the page's own scrolling counts. A text field scrolls inside itself when its text is longer
+         than the box; that event reports scrollTop 0 and used to snap the title back to full size. */
+      if (t && t !== document && t !== document.documentElement && !(t.contains && t.contains(el))) return;
+      const y = t && t !== document && typeof t.scrollTop === 'number' ? t.scrollTop : (window.scrollY || document.documentElement.scrollTop || 0);
+      const p = Math.max(0, Math.min(1, y / (window.innerHeight * 0.5)));
+      el.style.setProperty('--p', p.toFixed(3));
+      el.setAttribute('data-compact', p > 0.75 ? 'true' : 'false');
+    };
+    this._onDoc = (e) => {
+      if (this.s().menuId && !(e.target.closest && e.target.closest('.menu-anchor'))) this.set({ menuId: null });
+    };
+    document.addEventListener('scroll', this._onScroll, { passive: true, capture: true });
+    window.addEventListener('resize', this._onScroll);
+    document.addEventListener('click', this._onDoc);
+    this._onScroll();
+  }
+  componentWillUnmount() {
+    if (!this._onScroll) return;
+    document.removeEventListener('scroll', this._onScroll, { capture: true });
+    window.removeEventListener('resize', this._onScroll);
+    document.removeEventListener('click', this._onDoc);
+  }
+
+  renderVals() {
+    const s = this.s();
+    const sc = this.scene();
+    const af = s.activeForm;
+    const layout = sc === 'list' ? 'list' : (this.props.layout || 'list');
+    const leaving = s.leaving ? 'is-leaving' : '';
+    const created = (r) => r.createdAt || r.versions[0].createdAt;
+    const sorted = s.recipes.slice().sort((a, b) => created(b).localeCompare(created(a)));
+
+    /* Search: case-insensitive, matches any part of the name, bean or method ("san" finds "San Rafael") */
+    const showSearch = this.props.search !== false && s.recipes.length > 0;
+    const q = showSearch ? String(s.query || '').trim().toLowerCase() : '';
+    const has = (t) => String(t || '').toLowerCase().indexOf(q) !== -1;
+    const shown = q ? sorted.filter((r) => has(r.name) || has(r.bean) || has(r.method)) : sorted;
+    const cards = shown.map((r) => {
+      const latest = r.versions[r.versions.length - 1];
+      const prev = r.versions.slice(0, -1).reverse();
+      const isExp = s.expandedRecipeId === r.id;
+      const nv = !!af && af.type === 'newVersion' && af.recipeId === r.id;
+      const er = !!af && af.type === 'editRecipe' && af.recipeId === r.id;
+      const evHere = !!af && af.type === 'editVersion' && af.recipeId === r.id;
+      const aiMounted = s.aiId === r.id;
+      const aiOpen = aiMounted && s.aiShown;
+      const vhOpen = !!s.vhOpen[r.id];
+      return {
+        id: r.id, name: r.name, bean: r.bean, method: r.method, raw: r,
+        wide: layout === 'list' || isExp || nv || er ? 'true' : 'false',
+        removingClass: s.removing === r.id ? 'is-removing' : '',
+        cardClass: nv || er ? 'rc is-editing' : 'rc',
+        er: er, showView: !er, nv: nv, showData: !nv,
+        date: nv ? 'New version' : this.date(latest.createdAt),
+        formLeaving: leaving,
+        editInitial: Object.assign({ name: r.name, bean: r.bean, method: r.method }, this.toForm(latest)),
+        editSubtitle: this.date(latest.createdAt),
+        nvInitial: this.toForm(latest),
+        onSaveEdit: (f) => this.saveRecipeEdit(r.id, f),
+        onSaveNew: (f) => this.saveNewVersion(r.id, f),
+        onCancel: () => this.cancelRecipeForm(r.id),
+        summary: this.summary(latest, null),
+        details: this.details(latest, null),
+        notes: latest.tastingNotes,
+        expandedStr: isExp ? 'true' : 'false',
+        viewLabel: isExp ? 'Hide Recipe' : 'View Recipe',
+        aiLabel: aiOpen ? 'Hide AI' : 'Ask AI',
+        aiOpenStr: aiOpen ? 'true' : 'false',
+        aiMounted: aiMounted,
+        aiPanelId: 'ai-' + r.id,
+        menuOpen: s.menuId === r.id,
+        menuOpenStr: s.menuId === r.id ? 'true' : 'false',
+        hasMultiple: r.versions.length > 1,
+        toggleExpand: () => this.toggleExpand(r.id),
+        toggleAi: () => this.toggleAi(r.id),
+        toggleMenu: () => this.toggleMenu(r.id),
+        newVersion: () => this.startNewVersion(r.id, isExp),
+        edit: () => this.startEditRecipe(r.id, isExp),
+        deleteVersion: () => this.deleteVersion(r.id, latest.id),
+        deleteRecipe: () => this.deleteRecipe(r.id),
+        vhOpenStr: vhOpen ? 'true' : 'false',
+        vhCount: prev.length,
+        vhId: 'vh-' + r.id,
+        toggleVh: () => this.toggleVh(r.id, evHere),
+        history: prev.map((v, i) => {
+          const vExp = s.expandedVersionId === v.id;
+          const ed = evHere && af.versionId === v.id;
+          return {
+            id: v.id, n: prev.length - i, date: this.date(v.createdAt),
+            editing: ed, notEditing: !ed, rowClass: ed ? 'vrow is-editing' : 'vrow',
+            removingClass: s.removingVersion === v.id ? 'is-removing' : '',
+            formLeaving: leaving,
+            initial: this.toForm(v),
+            onSave: (f) => this.saveVersionEdit(r.id, v.id, f),
+            onCancel: () => this.cancelVersionForm(v.id),
+            summary: this.summary(v, latest),
+            details: this.details(v, latest),
+            notes: v.tastingNotes,
+            expandedStr: vExp ? 'true' : 'false',
+            viewLabel: vExp ? 'Hide Version' : 'View Version',
+            toggle: () => this.toggleVersion(v.id),
+            edit: () => this.startEditVersion(r.id, v.id, vExp),
+            del: () => this.deleteVersion(r.id, v.id)
+          };
+        })
+      };
+    });
+
+    const p = sc === 'landing' || sc === 'full' ? '0' : (sc === 'nav' ? String(this.props.progress || '1') : '1');
+    return {
+      scene: sc,
+      settlingStr: s.settling ? 'true' : 'false',
+      isStatic: sc === 'full' ? 'false' : 'true',
+      p: p,
+      setRoot: (el) => { this._root = el; },
+      showSearch: showSearch,
+      searchInHead: showSearch && !(af && af.type === 'create'),
+      searchBelowCreate: showSearch && !!af && af.type === 'create',
+      query: s.query || '',
+      hasQuery: !!s.query,
+      noResults: !!q && shown.length === 0,
+      setSearch: (el) => { this._search = el; },
+      onSearch: (e) => this.set({ query: e.target.value }),
+      clearSearch: () => { this.set({ query: '' }); if (this._search) this._search.focus(); },
+      showLanding: sc === 'full' || sc === 'landing' || sc === 'nav',
+      showRecipes: ['full', 'nav', 'recipes', 'forms', 'formsVersion', 'list', 'empty', 'changes'].indexOf(sc) !== -1,
+      showAbout: sc === 'full' || sc === 'about',
+      landingGradient: this.props.landingGradient || 'ember',
+      aboutGround: this.props.aboutGround || 'horizon',
+      headingGlow: this.props.headingGlow ? 'true' : 'false',
+      aiFails: !!this.props.aiFails,
+      aiForce: sc === 'recipes' ? 'answer' : '',
+      layout: layout,
+      no: false,
+      cards: cards,
+      isEmpty: s.recipes.length === 0 && !af,
+      emptyStr: s.recipes.length === 0 && !af ? 'true' : 'false',
+      showCreateBtn: !(af && af.type === 'create'),
+      createMounted: !!af && af.type === 'create',
+      createShownStr: s.createShown ? 'true' : 'false',
+      createInitial: { name: '', bean: '', method: '', doseGrams: '', grindSize: '', waterTempC: '', brewTime: '', brewTimeUnit: 'seconds', yieldGrams: '', rating: '', tastingNotes: '' },
+      createSubtitle: this.date(new Date().toISOString()),
+      openCreate: () => this.openCreate(),
+      saveCreate: (f) => this.saveCreate(f),
+      cancelCreate: () => this.closeCreate()
+    };
+  }
+}
+</script>
+</body>
+</html>

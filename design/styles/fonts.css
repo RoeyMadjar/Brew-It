@@ -1,0 +1,6 @@
+/* Chillax (Fontshare): the display font. Wordmark "Brew It" = 700, section titles / recipe names = 600.
+   Paths assume the font files are served from /fonts/ (e.g. Vite/CRA: put them in public/fonts/). */
+@font-face { font-family: 'Chillax'; font-weight: 700; font-style: normal; font-display: swap;
+  src: url('/fonts/Chillax-Bold.woff2') format('woff2'), url('/fonts/Chillax-Bold.woff') format('woff'); }
+@font-face { font-family: 'Chillax'; font-weight: 600; font-style: normal; font-display: swap;
+  src: url('/fonts/Chillax-Semibold.woff2') format('woff2'), url('/fonts/Chillax-Semibold.woff') format('woff'); }
