@@ -3,32 +3,8 @@
   text-align: left;
 }
 
-.recipe-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 32px;
-  text-align: left;
-}
-
-.recipe-card {
-  padding: 16px 20px;
-  border: 1px solid #e0d6c8;
-  border-radius: 8px;
-  background-color: #fff;
-}
-
-.recipe-card h2 {
-  margin-top: 0;
-  margin-bottom: 2px;
-}
-
-.recipe-card p {
-  margin: 4px 0;
-}
-
 /* Subtitle under the recipe name / version heading. */
-.recipe-card .version-date {
+.rc .version-date {
   margin: 0 0 12px;
   font-size: 0.9em;
   color: #6f6461;
@@ -49,11 +25,6 @@ input[type="number"]::-webkit-outer-spin-button {
   display: flex;
   gap: 8px;
   margin-top: 12px;
-}
-
-/* Edit mode: an amber card border shows the card is editable. */
-.recipe-card.editing {
-  border-color: #b5793a;
 }
 
 /* Borderless inputs: the pale warm background marks the editable fields. */
@@ -149,11 +120,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* Muted red, ~5.6:1 on the panel background (#f5efe6). */
-.recipe-card .ask-ai-error {
+.rc .ask-ai-error {
   color: #a63a2f;
 }
 
-.recipe-card .ask-ai-note {
+.rc .ask-ai-note {
   margin-top: 0;
   font-size: 0.85em;
   color: #6f6461;
@@ -203,11 +174,6 @@ input[type="number"]::-webkit-outer-spin-button {
   overflow-wrap: anywhere;
 }
 
-.version-grid .now-value {
-  display: block;
-  font-size: 0.85em;
-}
-
 .version-notes {
   margin: 8px 0;
 }
@@ -216,20 +182,6 @@ input[type="number"]::-webkit-outer-spin-button {
   .version-grid {
     grid-template-columns: repeat(2, minmax(0, 6rem));
   }
-}
-
-/* Salomie color for highlighting diffs: dark text on it is ~9:1 contrast. */
-.changed-value {
-  background-color: #ffd46b;
-  color: inherit;
-  font-weight: 700;
-  padding: 0 4px;
-  border-radius: 3px;
-}
-
-/* Muted warm grey: ~5.7:1 on the white card. */
-.now-value {
-  color: #6f6461;
 }
 
 .version-actions {

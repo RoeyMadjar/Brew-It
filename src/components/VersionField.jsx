@@ -3,8 +3,8 @@ import ComparedValue from "./ComparedValue.jsx";
 // One grid cell: label on top, (compared) value below.
 function VersionField({ label, version, compareTo, isChanged, format }) {
   return (
-    <div className="version-field">
-      <dt>{label}</dt>
+    <div className="bi-datafield">
+      <dt className="bi-datafield__label">{label}</dt>
       <dd>
         <ComparedValue
           version={version}

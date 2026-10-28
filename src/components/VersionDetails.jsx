@@ -1,16 +1,15 @@
 import VersionField from "./VersionField.jsx";
-import VersionSummary from "./VersionSummary.jsx";
 import { getChangedFields } from "../utils/compare.js";
 import { formatRatio, formatTemp } from "../utils/format.js";
 
+// The rows under VersionSummary that show when a recipe or version is
+// expanded. The summary always stays, so expanding only adds information.
 function VersionDetails({ version, compareTo }) {
   const changed = compareTo ? getChangedFields(version, compareTo) : null;
 
   return (
     <>
-      {/* Row 1 is the summary itself, so expanding only adds information. */}
-      <VersionSummary version={version} compareTo={compareTo} />
-      <dl className="version-grid">
+      <dl className="rc__details">
         <VersionField
           label="Grind size"
           version={version}
@@ -26,14 +25,19 @@ function VersionDetails({ version, compareTo }) {
           format={formatRatio}
         />
         <VersionField
-          label="Temperature"
+          // The ending hides on narrow cards (site.css), so phones read "Temp".
+          label={
+            <>
+              Temp<span className="lbl-rest">erature</span>
+            </>
+          }
           version={version}
           compareTo={compareTo}
           isChanged={changed?.waterTempC}
           format={(v) => formatTemp(v.waterTempC)}
         />
       </dl>
-      <dl className="version-notes">
+      <dl className="rc__notes">
         <dt>Tasting notes</dt>
         <dd>{version.tastingNotes}</dd>
       </dl>

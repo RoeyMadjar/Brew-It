@@ -6,7 +6,7 @@ function VersionSummary({ version, compareTo }) {
   const changed = compareTo ? getChangedFields(version, compareTo) : null;
 
   return (
-    <dl className="version-grid">
+    <dl className="rc__summary">
       <VersionField
         label="Dose"
         version={version}

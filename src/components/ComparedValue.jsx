@@ -2,14 +2,19 @@
 // current value, formatted with the same function.
 function ComparedValue({ version, compareTo, isChanged, format }) {
   if (!isChanged) {
-    return format(version);
+    return <span className="bi-datafield__value">{format(version)}</span>;
   }
 
   return (
-    <>
-      <mark className="changed-value">{format(version)}</mark>{" "}
-      <span className="now-value">now {format(compareTo)}</span>
-    </>
+    <span className="bi-changed">
+      <span className="bi-datafield__value bi-changed__value">
+        <span className="bi-visually-hidden">Changed: </span>
+        {format(version)}
+      </span>
+      <span className="bi-changed__now">
+        now <b>{format(compareTo)}</b>
+      </span>
+    </span>
   );
 }
 
