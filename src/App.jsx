@@ -3,6 +3,7 @@ import About from "./components/About.jsx";
 import AskAi from "./components/AskAi.jsx";
 import Header from "./components/Header.jsx";
 import Landing from "./components/Landing.jsx";
+import MoreMenu from "./components/MoreMenu.jsx";
 import RecipeEditForm from "./components/RecipeEditForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
@@ -74,6 +75,8 @@ function App() {
   const [expandedVersionId, setExpandedVersionId] = useState(null);
   // Only one Ask AI panel is open in the whole app.
   const [askAiRecipeId, setAskAiRecipeId] = useState(null);
+  // The recipe whose More menu is open (only one in the whole app).
+  const [openMenuId, setOpenMenuId] = useState(null);
   // The recipe playing its delete animation (removed from state after it).
   const [removingRecipeId, setRemovingRecipeId] = useState(null);
   // True for one frame after a delete: turns transitions off (site.css).
@@ -521,45 +524,63 @@ function App() {
                                 ></span>
                                 {isAskAiOpen ? "Hide AI" : "Ask AI"}
                               </button>
-                              <button
-                                type="button"
-                                className="bi-btn bi-btn--quiet bi-btn--sm"
-                                onClick={() =>
-                                  handleStartNewVersion(recipe.id, isExpanded)
+                              <MoreMenu
+                                isOpen={openMenuId === recipe.id}
+                                onToggle={() =>
+                                  setOpenMenuId(
+                                    openMenuId === recipe.id ? null : recipe.id,
+                                  )
                                 }
+                                onClose={() => setOpenMenuId(null)}
                               >
-                                New Version
-                              </button>
-                              <button
-                                type="button"
-                                className="bi-btn bi-btn--quiet bi-btn--sm"
-                                onClick={() =>
-                                  handleStartRecipeEdit(recipe.id, isExpanded)
-                                }
-                              >
-                                Edit
-                              </button>
-                              {recipe.versions.length > 1 && (
                                 <button
                                   type="button"
-                                  className="bi-btn bi-btn--quiet bi-btn--sm"
+                                  role="menuitem"
+                                  className="menu__item"
                                   onClick={() =>
-                                    handleDeleteVersion(
-                                      recipe.id,
-                                      latestVersion.id,
-                                    )
+                                    handleStartNewVersion(recipe.id, isExpanded)
                                   }
                                 >
-                                  Delete Version
+                                  New Version
                                 </button>
-                              )}
-                              <button
-                                type="button"
-                                className="bi-btn bi-btn--quiet bi-btn--sm"
-                                onClick={() => handleDelete(recipe.id)}
-                              >
-                                Delete Recipe
-                              </button>
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  className="menu__item"
+                                  onClick={() =>
+                                    handleStartRecipeEdit(recipe.id, isExpanded)
+                                  }
+                                >
+                                  Edit
+                                </button>
+                                {recipe.versions.length > 1 && (
+                                  <button
+                                    type="button"
+                                    role="menuitem"
+                                    className="menu__item"
+                                    onClick={() =>
+                                      handleDeleteVersion(
+                                        recipe.id,
+                                        latestVersion.id,
+                                      )
+                                    }
+                                  >
+                                    Delete Version
+                                  </button>
+                                )}
+                                <div
+                                  className="menu__sep"
+                                  role="separator"
+                                ></div>
+                                <button
+                                  type="button"
+                                  role="menuitem"
+                                  className="menu__item menu__item--danger"
+                                  onClick={() => handleDelete(recipe.id)}
+                                >
+                                  Delete Recipe
+                                </button>
+                              </MoreMenu>
                             </div>
                           )}
                         </>
