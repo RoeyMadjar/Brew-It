@@ -8,7 +8,13 @@ import RecipeEditForm from "./components/RecipeEditForm.jsx";
 import VersionDetails from "./components/VersionDetails.jsx";
 import VersionSummary from "./components/VersionSummary.jsx";
 import { formatDate } from "./utils/format.js";
-import { afterNextFrame, DELETE_MS, motionDelay } from "./utils/motion.js";
+import {
+  afterNextFrame,
+  CREATE_CLOSE_MS,
+  DELETE_MS,
+  FORM_LEAVE_MS,
+  motionDelay,
+} from "./utils/motion.js";
 import { getRecipeCreatedAt } from "./utils/recipe.js";
 import {
   formToVersionFields,
@@ -81,6 +87,11 @@ function App() {
   const [removingRecipeId, setRemovingRecipeId] = useState(null);
   // True for one frame after a delete: turns transitions off (site.css).
   const [isSettling, setIsSettling] = useState(false);
+  // True while a cancelled form fades out, before activeForm is cleared.
+  const [isFormLeaving, setIsFormLeaving] = useState(false);
+  // Drives the Create card's open/close animation (data-open). It's false
+  // for the first frame after opening, so the opening can animate.
+  const [isCreateShown, setIsCreateShown] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
@@ -89,8 +100,13 @@ function App() {
   // Only one edit at a time: while one is open, other actions just remind
   // the user to finish it. Returns true when the action should stop.
   function blockIfEditing() {
-    // A delete animation is playing: ignore clicks until it's gone.
-    if (removingRecipeId !== null) {
+    // A delete or form-closing animation is playing: ignore clicks until
+    // it's done.
+    if (
+      removingRecipeId !== null ||
+      isFormLeaving ||
+      (activeForm?.type === "create" && !isCreateShown)
+    ) {
       return true;
     }
     if (
@@ -130,11 +146,31 @@ function App() {
     return true;
   }
 
-  function openForm(form) {
+  // The Create card mounts closed, then opens a frame later: a transition
+  // only plays when data-open changes on an element that already exists.
+  function handleStartCreate() {
     if (blockIfEditing()) {
       return;
     }
-    setActiveForm(form);
+    setActiveForm({ type: "create" });
+    setIsCreateShown(false);
+    afterNextFrame(() => setIsCreateShown(true));
+  }
+
+  // Save and Cancel both collapse the card first, then remove the form.
+  function closeCreate() {
+    setIsCreateShown(false);
+    setTimeout(() => setActiveForm(null), motionDelay(CREATE_CLOSE_MS));
+  }
+
+  // Cancel fades the open form out (form-slot is-leaving), then closes it.
+  function closeFormAfterFade(afterClose) {
+    setIsFormLeaving(true);
+    setTimeout(() => {
+      afterClose();
+      setActiveForm(null);
+      setIsFormLeaving(false);
+    }, motionDelay(FORM_LEAVE_MS));
   }
 
   // Edit always shows the expanded card; wasExpanded lets Cancel undo that.
@@ -158,10 +194,13 @@ function App() {
   // Only collapse if this card is still the expanded one (another card may
   // have been opened while editing).
   function handleCancelRecipeEdit(recipeId) {
-    if (!activeForm.wasExpanded && expandedRecipeId === recipeId) {
-      setExpandedRecipeId(null);
-    }
-    setActiveForm(null);
+    const shouldCollapse =
+      !activeForm.wasExpanded && expandedRecipeId === recipeId;
+    closeFormAfterFade(() => {
+      if (shouldCollapse) {
+        setExpandedRecipeId(null);
+      }
+    });
   }
 
   // Same pattern as the recipe edit, using expandedVersionId.
@@ -179,10 +218,13 @@ function App() {
   }
 
   function handleCancelVersionEdit(versionId) {
-    if (!activeForm.wasExpanded && expandedVersionId === versionId) {
-      setExpandedVersionId(null);
-    }
-    setActiveForm(null);
+    const shouldCollapse =
+      !activeForm.wasExpanded && expandedVersionId === versionId;
+    closeFormAfterFade(() => {
+      if (shouldCollapse) {
+        setExpandedVersionId(null);
+      }
+    });
   }
 
   function handleDelete(idToDelete) {
@@ -271,7 +313,7 @@ function App() {
     };
 
     setRecipes([...recipes, newRecipe]);
-    setActiveForm(null);
+    closeCreate();
   }
 
   function handleSaveNewVersion(recipeId, formData) {
@@ -345,6 +387,7 @@ function App() {
     .slice()
     .sort((a, b) => getRecipeCreatedAt(b).localeCompare(getRecipeCreatedAt(a)));
   const isEmpty = recipes.length === 0 && activeForm === null;
+  const formSlotClass = isFormLeaving ? "form-slot is-leaving" : "form-slot";
 
   return (
     // id="top" is the target of the navbar's "back to top" links.
@@ -371,7 +414,7 @@ function App() {
                   <button
                     type="button"
                     className="bi-btn bi-btn--primary"
-                    onClick={() => openForm({ type: "create" })}
+                    onClick={handleStartCreate}
                   >
                     Create Recipe
                   </button>
@@ -381,17 +424,22 @@ function App() {
 
             <div className="recipe-grid" data-layout="list">
               {activeForm?.type === "create" && (
-                <div className="rc-wrap rc-wrap--create">
-                  <article className="rc is-editing" aria-label="New recipe">
-                    <RecipeEditForm
-                      key="create"
-                      initialValues={emptyForm}
-                      onSave={handleCreateRecipe}
-                      onCancel={() => setActiveForm(null)}
-                      subtitle={formatDate(new Date().toISOString())}
-                      submitLabel="Save Recipe"
-                    />
-                  </article>
+                <div
+                  className="rc-wrap rc-wrap--create collapse"
+                  data-open={isCreateShown}
+                >
+                  <div>
+                    <article className="rc is-editing" aria-label="New recipe">
+                      <RecipeEditForm
+                        key="create"
+                        initialValues={emptyForm}
+                        onSave={handleCreateRecipe}
+                        onCancel={closeCreate}
+                        subtitle={formatDate(new Date().toISOString())}
+                        submitLabel="Save Recipe"
+                      />
+                    </article>
+                  </div>
                 </div>
               )}
               {sortedRecipes.map((recipe) => {
@@ -430,20 +478,22 @@ function App() {
                     >
                       {/* Edit mode replaces everything above Version History. */}
                       {isEditRecipeOpen ? (
-                        <RecipeEditForm
-                          key="editRecipe"
-                          initialValues={{
-                            name: recipe.name,
-                            bean: recipe.bean,
-                            method: recipe.method,
-                            ...versionToFormValues(latestVersion),
-                          }}
-                          onSave={(formData) =>
-                            handleSaveRecipeEdit(recipe.id, formData)
-                          }
-                          onCancel={() => handleCancelRecipeEdit(recipe.id)}
-                          subtitle={formatDate(latestVersion.createdAt)}
-                        />
+                        <div className={formSlotClass}>
+                          <RecipeEditForm
+                            key="editRecipe"
+                            initialValues={{
+                              name: recipe.name,
+                              bean: recipe.bean,
+                              method: recipe.method,
+                              ...versionToFormValues(latestVersion),
+                            }}
+                            onSave={(formData) =>
+                              handleSaveRecipeEdit(recipe.id, formData)
+                            }
+                            onCancel={() => handleCancelRecipeEdit(recipe.id)}
+                            subtitle={formatDate(latestVersion.createdAt)}
+                          />
+                        </div>
                       ) : (
                         <>
                           <div className="rc__body">
@@ -464,20 +514,22 @@ function App() {
                               </dl>
                             </div>
                             {isNewVersionOpen ? (
-                              <RecipeEditForm
-                                key="newVersion"
-                                initialValues={versionToFormValues(
-                                  latestVersion,
-                                )}
-                                onSave={(formData) =>
-                                  handleSaveNewVersion(recipe.id, formData)
-                                }
-                                onCancel={() =>
-                                  handleCancelRecipeEdit(recipe.id)
-                                }
-                                showRecipeFields={false}
-                                submitLabel="Save Version"
-                              />
+                              <div className={formSlotClass}>
+                                <RecipeEditForm
+                                  key="newVersion"
+                                  initialValues={versionToFormValues(
+                                    latestVersion,
+                                  )}
+                                  onSave={(formData) =>
+                                    handleSaveNewVersion(recipe.id, formData)
+                                  }
+                                  onCancel={() =>
+                                    handleCancelRecipeEdit(recipe.id)
+                                  }
+                                  showRecipeFields={false}
+                                  submitLabel="Save Version"
+                                />
+                              </div>
                             ) : (
                               <div className="rc__data">
                                 <VersionSummary version={latestVersion} />
@@ -623,20 +675,22 @@ function App() {
                                 {formatDate(version.createdAt)}
                               </p>
                               {isEditVersionOpen ? (
-                                <RecipeEditForm
-                                  initialValues={versionToFormValues(version)}
-                                  onSave={(formData) =>
-                                    handleSaveVersionEdit(
-                                      recipe.id,
-                                      version.id,
-                                      formData,
-                                    )
-                                  }
-                                  onCancel={() =>
-                                    handleCancelVersionEdit(version.id)
-                                  }
-                                  showRecipeFields={false}
-                                />
+                                <div className={formSlotClass}>
+                                  <RecipeEditForm
+                                    initialValues={versionToFormValues(version)}
+                                    onSave={(formData) =>
+                                      handleSaveVersionEdit(
+                                        recipe.id,
+                                        version.id,
+                                        formData,
+                                      )
+                                    }
+                                    onCancel={() =>
+                                      handleCancelVersionEdit(version.id)
+                                    }
+                                    showRecipeFields={false}
+                                  />
+                                </div>
                               ) : (
                                 <>
                                   <VersionSummary

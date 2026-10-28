@@ -2,7 +2,8 @@ import { useId, useState } from "react";
 import { formatRatio } from "../utils/format.js";
 import { formToVersionFields } from "../utils/versionForm.js";
 
-// Edit mode laid out like the expanded card: same grid, inputs instead of values.
+// Edit mode laid out like the expanded card: name, bean and method on the
+// left (recipe-level forms only), the brew values on the right.
 function RecipeEditForm({
   initialValues,
   onSave,
@@ -43,67 +44,62 @@ function RecipeEditForm({
     }
   }
 
-  // Recipe-level forms (Create, Edit Recipe) get darker inputs than
-  // version-level ones (New Version, Edit Version).
+  // Recipe-level forms (Create, Edit Recipe) get warm inputs, version-level
+  // ones (New Version, Edit Version) cool ones (rf--recipe / rf--version).
   return (
     <form
-      className={
-        showRecipeFields
-          ? "recipe-edit-form recipe-level-form"
-          : "recipe-edit-form"
-      }
+      className={showRecipeFields ? "rf rf--recipe" : "rf rf--version"}
       onSubmit={handleSubmit}
       onWheel={handleWheel}
     >
       {showRecipeFields && (
-        <input
-          className="edit-name"
-          type="text"
-          name="name"
-          aria-label="Recipe name"
-          placeholder="Recipe's name"
-          required
-          value={formData.name}
-          onChange={handleChange}
-        />
-      )}
-      {subtitle && <p className="version-date">{subtitle}</p>}
-      {showRecipeFields && (
-        <>
-          <p>
-            <label>
-              <strong>Bean:</strong>{" "}
-              <input
-                type="text"
-                name="bean"
-                required
-                value={formData.bean}
-                onChange={handleChange}
-              />
-            </label>
-          </p>
-          <p>
-            <label>
-              <strong>Method:</strong>{" "}
-              <input
-                type="text"
-                name="method"
-                required
-                value={formData.method}
-                onChange={handleChange}
-              />
-            </label>
-          </p>
-        </>
+        <div className="rf__identity">
+          <div>
+            <input
+              className="bi-input bi-input--recipe rf__name"
+              type="text"
+              name="name"
+              aria-label="Recipe name"
+              placeholder="Recipe's name"
+              required
+              value={formData.name}
+              onChange={handleChange}
+            />
+            {subtitle && <p className="rc__date">{subtitle}</p>}
+          </div>
+          <label className="bi-field">
+            <span className="bi-field__label">Bean:</span>
+            <input
+              className="bi-input bi-input--recipe"
+              type="text"
+              name="bean"
+              required
+              value={formData.bean}
+              onChange={handleChange}
+            />
+          </label>
+          <label className="bi-field">
+            <span className="bi-field__label">Method:</span>
+            <input
+              className="bi-input bi-input--recipe"
+              type="text"
+              name="method"
+              required
+              value={formData.method}
+              onChange={handleChange}
+            />
+          </label>
+        </div>
       )}
 
-      <dl className="version-grid">
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-dose`}>Dose (g)</label>
-          </dt>
-          <dd>
+      <div className="rf__knobs">
+        <div className="rf__row rf__row--a">
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-dose`}>
+              Dose (g)
+            </label>
             <input
+              className="bi-input rf-input"
               id={`${id}-dose`}
               type="number"
               name="doseGrams"
@@ -113,14 +109,13 @@ function RecipeEditForm({
               value={formData.doseGrams}
               onChange={handleChange}
             />
-          </dd>
-        </div>
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-yield`}>Yield (g)</label>
-          </dt>
-          <dd>
+          </div>
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-yield`}>
+              Yield (g)
+            </label>
             <input
+              className="bi-input rf-input"
               id={`${id}-yield`}
               type="number"
               name="yieldGrams"
@@ -128,38 +123,76 @@ function RecipeEditForm({
               value={formData.yieldGrams}
               onChange={handleChange}
             />
-          </dd>
+          </div>
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-brew-time`}>
+              Brew time
+            </label>
+            <div className="rf__time">
+              <input
+                className="bi-input rf-input"
+                id={`${id}-brew-time`}
+                type="number"
+                name="brewTime"
+                step={isMinutes ? "any" : undefined}
+                value={formData.brewTime}
+                onChange={handleChange}
+              />
+              <select
+                className="bi-input rf-input"
+                aria-label="Brew time unit"
+                name="brewTimeUnit"
+                value={formData.brewTimeUnit}
+                onChange={handleChange}
+              >
+                <option value="seconds">sec</option>
+                <option value="minutes">min</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-brew-time`}>Brew time</label>
-          </dt>
-          <dd className="brew-time-input">
+
+        <div className="rf__row rf__row--b">
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-grind`}>
+              Grind size
+            </label>
             <input
-              id={`${id}-brew-time`}
-              type="number"
-              name="brewTime"
-              step={isMinutes ? "any" : undefined}
-              value={formData.brewTime}
+              className="bi-input rf-input"
+              id={`${id}-grind`}
+              type="text"
+              name="grindSize"
+              required
+              value={formData.grindSize}
               onChange={handleChange}
             />
-            <select
-              aria-label="Brew time unit"
-              name="brewTimeUnit"
-              value={formData.brewTimeUnit}
-              onChange={handleChange}
-            >
-              <option value="seconds">sec</option>
-              <option value="minutes">min</option>
-            </select>
-          </dd>
-        </div>
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-rating`}>Rating (1–10)</label>
-          </dt>
-          <dd>
+          </div>
+          <div className="bi-field">
+            <span className="bi-field__label">Ratio</span>
+            <output className="rf__ratio">
+              {formatRatio(formToVersionFields(formData))}
+            </output>
+          </div>
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-temp`}>
+              Temp (°C)
+            </label>
             <input
+              className="bi-input rf-input"
+              id={`${id}-temp`}
+              type="number"
+              name="waterTempC"
+              step="any"
+              value={formData.waterTempC}
+              onChange={handleChange}
+            />
+          </div>
+          <div className="bi-field">
+            <label className="bi-field__label" htmlFor={`${id}-rating`}>
+              Rating (1–10)
+            </label>
+            <input
+              className="bi-input rf-input"
               id={`${id}-rating`}
               type="number"
               name="rating"
@@ -169,64 +202,33 @@ function RecipeEditForm({
               value={formData.rating}
               onChange={handleChange}
             />
-          </dd>
+          </div>
         </div>
-      </dl>
 
-      <dl className="version-grid">
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-grind`}>Grind size</label>
-          </dt>
-          <dd>
-            <input
-              id={`${id}-grind`}
-              type="text"
-              name="grindSize"
-              required
-              value={formData.grindSize}
-              onChange={handleChange}
-            />
-          </dd>
-        </div>
-        <div className="version-field">
-          <dt>Ratio</dt>
-          <dd>{formatRatio(formToVersionFields(formData))}</dd>
-        </div>
-        <div className="version-field">
-          <dt>
-            <label htmlFor={`${id}-temp`}>Temp (°C)</label>
-          </dt>
-          <dd>
-            <input
-              id={`${id}-temp`}
-              type="number"
-              name="waterTempC"
-              step="any"
-              value={formData.waterTempC}
-              onChange={handleChange}
-            />
-          </dd>
-        </div>
-      </dl>
-
-      <dl className="version-notes">
-        <dt>
-          <label htmlFor={`${id}-notes`}>Tasting notes</label>
-        </dt>
-        <dd>
+        <div className="bi-field">
+          <label className="bi-field__label" htmlFor={`${id}-notes`}>
+            Tasting notes
+          </label>
           <textarea
+            className="bi-input rf-input"
             id={`${id}-notes`}
             name="tastingNotes"
+            rows="3"
             value={formData.tastingNotes}
             onChange={handleChange}
           />
-        </dd>
-      </dl>
+        </div>
+      </div>
 
-      <div className="card-actions">
-        <button type="submit">{submitLabel}</button>
-        <button type="button" onClick={onCancel}>
+      <div className="rf__actions">
+        <button type="submit" className="bi-btn bi-btn--primary bi-btn--sm">
+          {submitLabel}
+        </button>
+        <button
+          type="button"
+          className="bi-btn bi-btn--quiet bi-btn--sm"
+          onClick={onCancel}
+        >
           Cancel
         </button>
       </div>

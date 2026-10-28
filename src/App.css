@@ -21,54 +21,6 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
-.card-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 12px;
-}
-
-/* Borderless inputs: the pale warm background marks the editable fields. */
-.recipe-edit-form input,
-.recipe-edit-form select,
-.recipe-edit-form textarea {
-  box-sizing: border-box;
-  font: inherit;
-  border: none;
-  border-radius: 4px;
-  background-color: #fff8ec;
-}
-
-/* Recipe-level forms (Create, Edit Recipe): darker sand inputs set them
-   apart from version forms. Dark text on it is ~10:1. */
-.recipe-level-form input,
-.recipe-level-form select,
-.recipe-level-form textarea {
-  background-color: #f3dfc1;
-}
-
-/* Inputs fill their grid column instead of their default ~20ch width. */
-.recipe-edit-form .version-grid input,
-.recipe-edit-form textarea {
-  width: 100%;
-}
-
-.recipe-edit-form .edit-name {
-  width: 100%;
-  margin-bottom: 2px;
-  font-size: 1.5em;
-  font-weight: 700;
-}
-
-.recipe-edit-form .brew-time-input {
-  display: flex;
-  gap: 4px;
-}
-
-.recipe-edit-form .brew-time-input input {
-  flex: 1;
-  min-width: 0;
-}
-
 /* Warm tint and frame set past versions apart from the current recipe.
    Muted text (#6f6461) on it is ~5.2:1. */
 .version-history {
@@ -147,41 +99,6 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .version-entry h3 {
   margin: 0 0 2px;
-}
-
-/* Columns are 6rem (fits values like "now 7.5/10") and shrink evenly
-   if the card is narrower, so they line up across every grid. */
-.version-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 6rem));
-  gap: 8px 1rem;
-  justify-content: start;
-  margin: 8px 0;
-}
-
-.version-grid dt,
-.version-notes dt {
-  font-size: 0.85em;
-  font-weight: 700;
-}
-
-.version-grid dd,
-.version-notes dd {
-  margin: 0;
-}
-
-.version-grid dd {
-  overflow-wrap: anywhere;
-}
-
-.version-notes {
-  margin: 8px 0;
-}
-
-@media (max-width: 480px) {
-  .version-grid {
-    grid-template-columns: repeat(2, minmax(0, 6rem));
-  }
 }
 
 .version-actions {
