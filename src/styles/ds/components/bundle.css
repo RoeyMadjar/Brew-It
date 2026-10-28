@@ -1,0 +1,455 @@
+@import url("https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,100..900;1,62..125,100..900&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Sans:ital,wdth,wght@0,75..100,400..700;1,75..100,400..700&display=swap");
+
+/* ==========================================================================
+   Brew It — component stylesheet (plain CSS, BEM-ish, prefix bi-)
+   Tokens (colors, spacing, radius, shadow, duration, easing, layout, fonts)
+   come from tokens.css, generated from tokens.json. This file only uses them.
+   ========================================================================== */
+
+/* ---------- Reduced motion: every duration collapses ---------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0.01ms;
+    --duration-fast: 0.01ms;
+    --duration-base: 0.01ms;
+    --duration-slow: 0.01ms;
+    --duration-delete: 0.01ms;
+    --duration-scroll: 0.01ms;
+    --duration-ambient: 0.01ms;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
+/* ---------- Base ---------- */
+html { color-scheme: dark; }
+body {
+  margin: 0;
+  background: var(--bg-000);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: var(--accent); color: var(--on-accent); }
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.bi-visually-hidden {
+  position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* ---------- Type roles ---------- */
+.bi-display {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  line-height: 0.88;
+  margin: 0;
+}
+.bi-display--hero { font-size: clamp(64px, 12vw, 160px); line-height: 0.86; letter-spacing: -0.035em; }
+.bi-display--xl   { font-size: clamp(52px, 8vw, 112px); }
+.bi-display--lg   { font-size: clamp(40px, 5.5vw, 72px); line-height: 0.92; letter-spacing: -0.025em; }
+.bi-display--md   { font-size: clamp(32px, 3.6vw, 48px); line-height: 0.95; letter-spacing: -0.02em; font-weight: 700; }
+
+/* Wide extended italic: Archivo at 125% width */
+.bi-accent, .accent-xl, .accent-md {
+  font-family: var(--font-accent);
+  font-style: italic;
+  font-stretch: 125%;
+  font-variation-settings: "wdth" 125;
+  text-transform: none;
+}
+.bi-accent { font-weight: 800; letter-spacing: -0.02em; }
+
+.bi-lead  { font-family: var(--font-body); font-size: clamp(20px, 2.2vw, 26px); line-height: 1.38; letter-spacing: -0.01em; color: var(--ink-2); max-width: 36ch; }
+.bi-label { font-family: var(--font-mono); font-size: 12px; font-weight: 500; line-height: 1.35; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); }
+.bi-label--xs { font-size: 11px; letter-spacing: 0.1em; }
+.bi-data  { font-family: var(--font-mono); font-size: 16px; line-height: 1.3; font-variant-numeric: tabular-nums; color: var(--ink); }
+
+/* ---------- Grain texture ---------- */
+/* Add .bi-grain to any positioned surface; the noise sits on top, clicks pass through. */
+.bi-grain { position: relative; isolation: isolate; }
+.bi-grain::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.945 0 0 0 0 0.906 0 0 0 0 0.827 0 0 0 1.6 -0.55'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  opacity: var(--grain-opacity, 0.07);
+  z-index: 1;
+}
+.bi-grain--strong { --grain-opacity: 0.14; }
+/* Whole-page grain: put <div class="bi-grain-page" aria-hidden="true"></div> once in the app root */
+.bi-grain-page { position: fixed; inset: 0; pointer-events: none; z-index: 100; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.945 0 0 0 0 0.906 0 0 0 0 0.827 0 0 0 1.6 -0.55'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23g)'/%3E%3C/svg%3E"); background-size: 240px 240px; opacity: 0.05; }
+
+/* ---------- Editorial grid lines ---------- */
+.bi-gridlines {
+  background-image: linear-gradient(to right, var(--line-grid) 1px, transparent 1px);
+  background-size: calc(100% / var(--bi-cols, 12)) 100%;
+  background-position: 0 0;
+  box-shadow: inset -1px 0 0 var(--line-grid);
+}
+@media (max-width: 720px) { .bi-gridlines { --bi-cols: 4; } }
+.bi-rule { border: 0; border-top: 1px solid var(--line-hairline); margin: 0; }
+
+/* ---------- Gradients (chosen: B, D, E) ---------- */
+/* B. Ask AI panel wash: a warm carmine dusk at the top of the indigo inset panel */
+.bi-gradient-ai-panel {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--palette-violet-carmine) 45%, transparent) 0, transparent 180px),
+    var(--inset-100);
+}
+/* D. Empty-state orb: one soft halftone-ish sun behind an empty list or 404 */
+.bi-gradient-orb {
+  background:
+    radial-gradient(circle at 50% 110%, color-mix(in srgb, var(--accent) 70%, transparent) 0, color-mix(in srgb, var(--accent-deep) 45%, transparent) 30%, transparent 62%),
+    var(--bg-000);
+}
+/* E. Footer horizon: Vandyke brown rising into black at the very bottom of the page */
+.bi-gradient-horizon { background: linear-gradient(0deg, var(--palette-vandyke-brown) 0, var(--bg-000) 100%); }
+
+/* ---------- Buttons ---------- */
+.bi-btn {
+  --bi-btn-h: var(--control-height);
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  height: var(--bi-btn-h);
+  padding: 0 26px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ink);
+  font: 500 16px/1 var(--font-body);
+  letter-spacing: 0;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard),
+              border-color var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard),
+              transform var(--duration-instant) var(--ease-standard);
+}
+.bi-btn:active { transform: scale(0.98); }
+.bi-btn--sm { --bi-btn-h: var(--control-height-sm); padding: 0 18px; font-size: 14px; }
+
+.bi-btn--primary { background: var(--accent); color: var(--on-accent); }
+.bi-btn--primary:hover { background: var(--accent-hover); }
+.bi-btn--primary:active { background: var(--accent-press); }
+
+.bi-btn--secondary { border-color: var(--line-control); color: var(--ink); }
+.bi-btn--secondary:hover { background: var(--bg-200); border-color: var(--ink-3); }
+.bi-btn--secondary:active { background: var(--bg-300); }
+
+.bi-btn--quiet { padding: 0 14px; color: var(--ink-2); }
+.bi-btn--quiet:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+
+.bi-btn--danger { background: var(--danger); color: var(--ink); }
+.bi-btn--danger:hover { background: var(--danger-hover); }
+.bi-btn--danger:active { background: var(--danger-press); }
+
+/* Disabled: use aria-disabled="true" so it stays focusable and can announce its note */
+.bi-btn:disabled, .bi-btn[aria-disabled="true"] {
+  background: transparent;
+  border: 1px dashed var(--line-hairline);
+  color: var(--ink-disabled);
+  cursor: not-allowed;
+  transform: none;
+}
+.bi-btn-with-note { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.bi-btn-note { font: 500 11px/1.3 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); padding-left: 4px; }
+
+/* Loading: aria-busy="true"; keep the label, prepend a spinner */
+.bi-btn[aria-busy="true"] { cursor: progress; }
+.bi-btn[aria-busy="true"]::before {
+  content: ""; width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid currentColor; border-right-color: transparent;
+  animation: bi-spin 800ms linear infinite;
+}
+@keyframes bi-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .bi-btn[aria-busy="true"]::before { animation: none; border-right-color: currentColor; border-style: dotted; }
+}
+
+/* Ask AI: a static deep-indigo pill. On hover / keyboard focus a thin spectral
+   glow traces its border (1px conic-gradient ring + a soft blurred halo) and slowly
+   circles. Stops: accent, Laelia Pink, soft green, Raw Sienna (no blues or purples). */
+@property --bi-ai-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.bi-btn--ai {
+  --bi-ai-glow: conic-gradient(from var(--bi-ai-angle),
+    var(--accent), var(--palette-laelia-pink), var(--palette-soft-green),
+    var(--accent-deep), var(--accent));
+  position: relative;
+  isolation: isolate;
+  background: var(--inset-200);
+  border-color: var(--line-control-cool);
+  color: var(--ink);
+  transition: border-color var(--duration-base) var(--ease-standard);
+}
+.bi-btn--ai::before,
+.bi-btn--ai::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+/* the thin ring: same static fill inside, the spectral gradient only in a 1px border */
+.bi-btn--ai::before {
+  z-index: -1;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--inset-200), var(--inset-200)) padding-box,
+    var(--bi-ai-glow) border-box;
+}
+/* the halo: same gradient, blurred, behind the ring so the fill stays static */
+.bi-btn--ai::after {
+  z-index: -2;
+  inset: -2px;
+  background: var(--bi-ai-glow);
+  filter: blur(10px);
+}
+.bi-btn--ai:hover, .bi-btn--ai:focus-visible { border-color: transparent; }
+.bi-btn--ai:hover::before, .bi-btn--ai:focus-visible::before { opacity: 1; }
+.bi-btn--ai:hover::after,  .bi-btn--ai:focus-visible::after  { opacity: 0.45; }
+.bi-btn--ai:hover::before, .bi-btn--ai:hover::after,
+.bi-btn--ai:focus-visible::before, .bi-btn--ai:focus-visible::after {
+  animation: bi-ai-orbit var(--duration-ambient) linear infinite;
+}
+@keyframes bi-ai-orbit { to { --bi-ai-angle: 360deg; } }
+.bi-btn__spark {
+  width: 8px; height: 8px; border-radius: 50%; flex: none;
+  background: conic-gradient(var(--accent), var(--palette-laelia-pink), var(--palette-soft-green), var(--accent));
+}
+
+/* ---------- Form fields ---------- */
+.bi-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bi-field__label { font: 500 12px/1.35 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+.bi-field__help  { font-size: 14px; line-height: 1.5; color: var(--ink-3); }
+.bi-field__error { display: flex; gap: 8px; align-items: baseline; font-size: 14px; line-height: 1.5; color: var(--error); }
+.bi-field__error::before { content: "!"; flex: none; display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid currentColor; font: 700 11px/1 var(--font-mono); transform: translateY(2px); }
+
+.bi-input {
+  box-sizing: border-box;
+  width: 100%;
+  color: var(--ink);
+  font: inherit;
+  background: none;
+  border: 0;
+  margin: 0;
+  transition: border-color var(--duration-fast) var(--ease-standard), background-color var(--duration-fast) var(--ease-standard);
+}
+.bi-input::placeholder { color: var(--ink-3); opacity: 1; }
+select.bi-input {
+  appearance: none; -webkit-appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%23d6bd8e' stroke-width='1.5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+select.bi-input option { background: var(--bg-100); color: var(--ink); }
+textarea.bi-input { resize: vertical; min-height: 120px; }
+
+/* Recipe-level: editorial underline fields, sans, large. The recipe's identity. */
+.bi-input--recipe {
+  min-height: var(--control-height);
+  padding: 10px 2px;
+  font-family: var(--font-body);
+  font-size: 20px;
+  line-height: 1.4;
+  border-bottom: 1px solid var(--line-control);
+  border-radius: 0;
+}
+.bi-input--recipe:hover { border-bottom-color: var(--ink-3); }
+.bi-input--recipe:focus { border-bottom-color: var(--accent); box-shadow: 0 1px 0 0 var(--accent); }
+.bi-input--recipe:focus-visible { outline-offset: 6px; border-radius: var(--radius-sm); }
+textarea.bi-input--recipe { border: 1px solid var(--line-control); border-radius: var(--radius-md); padding: 14px 16px; font-size: 18px; line-height: 1.6; }
+select.bi-input--recipe { padding-right: 40px; background-position: right 4px center; }
+
+/* Version-level: cool indigo filled boxes, mono numbers, units. The experiment knobs. */
+.bi-input--version {
+  height: 44px;
+  padding: 0 14px;
+  background-color: var(--inset-200);
+  border: 1px solid var(--line-control-cool);
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+.bi-input--version:hover { border-color: var(--ink-3); }
+.bi-input--version:focus { border-color: var(--ink); }
+textarea.bi-input--version { height: auto; padding: 12px 14px; font-size: 15px; line-height: 1.5; }
+.bi-input-unit { position: relative; display: block; }
+.bi-input-unit > .bi-input { padding-right: 52px; }
+.bi-input-unit__suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font: 500 12px/1 var(--font-mono); letter-spacing: 0.04em; color: var(--ink-3); pointer-events: none; }
+.bi-input[type="number"] { -moz-appearance: textfield; }
+.bi-input[type="number"]::-webkit-inner-spin-button, .bi-input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+
+.bi-input[aria-invalid="true"] { border-color: var(--error); }
+.bi-input--recipe[aria-invalid="true"] { border-bottom-color: var(--error); }
+
+/* ---------- Data field ---------- */
+.bi-datafield { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.bi-datafield__label { font: 500 11px/1.3 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); }
+.bi-datafield__value { font: 400 16px/1.3 var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+.bi-datafield__value--lg { font: 700 32px/1 var(--font-display); letter-spacing: -0.02em; }
+/* Units: no literal space in the markup; the unit sits a hairline (0.15em) after the number */
+.bi-datafield__unit, .bi-unit { padding-left: 0.15em; }
+.bi-datafield__unit { color: var(--ink-3); }
+.bi-datafields { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 20px 24px; }
+
+/* ---------- Changed value ---------- */
+.bi-changed { display: inline-flex; flex-direction: column; gap: 2px; }
+.bi-changed__value {
+  align-self: flex-start;
+  color: var(--changed);
+  background: var(--changed-bg);
+  border-radius: var(--radius-sm);
+  padding: 1px 6px;
+  margin-left: -6px;
+  text-decoration: underline;
+  text-decoration-color: var(--changed-line);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.bi-changed__now { font: 400 13px/1.4 var(--font-body); color: var(--ink-3); }
+.bi-changed__now b { font-family: var(--font-mono); font-weight: 400; color: var(--ink-2); margin-left: 0.3em; }
+
+/* ---------- Recipe card ---------- */
+.bi-card {
+  display: flex; flex-direction: column; gap: 24px;
+  padding: 24px;
+  background: var(--bg-100);
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-edge);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-standard), border-color var(--duration-fast) var(--ease-standard);
+}
+a.bi-card:hover { background: var(--bg-200); border-color: var(--line-control); }
+.bi-card__meta { display: flex; justify-content: space-between; gap: 12px; }
+.bi-card__title { font: 800 clamp(28px, 3vw, 40px)/0.95 var(--font-display); letter-spacing: -0.02em; text-transform: uppercase; margin: 0; }
+.bi-card__origin { margin: 8px 0 0; color: var(--ink-2); font-size: 15px; }
+.bi-card__foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--line-hairline); }
+.bi-card__version { font: italic 800 28px/1 var(--font-accent); font-stretch: 125%; font-variation-settings: "wdth" 125; color: var(--accent); letter-spacing: -0.02em; }
+
+/* ---------- Tinted inset panel ---------- */
+.bi-inset {
+  background: var(--inset-100);
+  border: 1px solid color-mix(in srgb, var(--line-control-cool) 45%, transparent);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  overflow: hidden;
+}
+.bi-inset__head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 24px; }
+.bi-inset__toggle { all: unset; box-sizing: border-box; display: flex; flex: 1; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; border-radius: var(--radius-md); }
+.bi-inset__toggle:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+.bi-inset__title { font: 700 22px/1.1 var(--font-display); text-transform: uppercase; letter-spacing: -0.01em; margin: 0; }
+.bi-inset__chev { width: 12px; height: 12px; border-right: 1.5px solid var(--ink-2); border-bottom: 1.5px solid var(--ink-2); transform: rotate(45deg) translateY(-3px); transition: transform var(--duration-slow) var(--ease-enter); }
+.bi-inset[data-open="true"] .bi-inset__chev { transform: rotate(225deg) translateY(-3px); }
+.bi-inset__body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--duration-slow) var(--ease-enter); }
+.bi-inset[data-open="true"] .bi-inset__body { grid-template-rows: 1fr; }
+.bi-inset__body > * { overflow: hidden; }
+.bi-inset__content { padding: 0 24px 24px; }
+.bi-inset--ai { background: linear-gradient(180deg, color-mix(in srgb, var(--palette-violet-carmine) 45%, transparent) 0, transparent 180px), var(--inset-100); }
+
+/* Version row inside Version History */
+.bi-version-row { display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; align-items: baseline; padding: 14px 0; border-top: 1px solid color-mix(in srgb, var(--line-control-cool) 40%, transparent); }
+.bi-version-row__v { font: italic 800 22px/1 var(--font-accent); font-stretch: 125%; font-variation-settings: "wdth" 125; color: var(--ink-2); }
+.bi-version-row[aria-current="true"] .bi-version-row__v { color: var(--accent); }
+
+/* ---------- Navbar ---------- */
+.bi-nav {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  height: var(--nav-height-lg);
+  padding: 0 clamp(16px, 4vw, 64px);
+  border-bottom: 1px solid var(--line-hairline);
+  background: var(--bg-000);
+  transition: height var(--duration-base) var(--ease-scroll), margin var(--duration-base) var(--ease-scroll),
+              border-radius var(--duration-base) var(--ease-scroll), background-color var(--duration-base) var(--ease-scroll);
+}
+.bi-nav__brand { display: inline-flex; align-items: center; gap: 14px; color: var(--ink); text-decoration: none; border-radius: var(--radius-sm); }
+.bi-nav__logo { height: 64px; width: auto; display: block; transition: height var(--duration-base) var(--ease-scroll); }
+.bi-nav__word { font: 800 40px/0.9 var(--font-display); letter-spacing: -0.03em; transition: font-size var(--duration-base) var(--ease-scroll); }
+.bi-nav__links { display: flex; align-items: center; gap: 28px; list-style: none; margin: 0; padding: 0; }
+.bi-nav__link { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); text-decoration: none; padding: 8px 0; border-bottom: 1px solid transparent; }
+.bi-nav__link:hover { color: var(--ink); }
+.bi-nav__link[aria-current="page"] { color: var(--accent); border-bottom-color: var(--accent); }
+
+.bi-nav[data-size="compact"] {
+  height: var(--nav-height-sm);
+  margin: 12px clamp(12px, 3vw, 48px) 0;
+  padding: 0 12px 0 20px;
+  border: 1px solid var(--line-hairline);
+  border-radius: var(--radius-pill);
+  background: var(--bg-100);
+  box-shadow: var(--shadow-edge), var(--shadow-float);
+}
+.bi-nav[data-size="compact"] .bi-nav__logo { height: 34px; }
+.bi-nav[data-size="compact"] .bi-nav__word { font-size: 22px; }
+@media (max-width: 720px) { .bi-nav__links { display: none; } }
+
+/* ---------- Section heading ---------- */
+.bi-section-head { display: grid; gap: 20px; }
+.bi-section-head__bar { display: flex; justify-content: space-between; gap: 16px; padding-top: 12px; border-top: 1px solid var(--line-hairline); }
+.bi-section-head__title { font: 800 clamp(40px, 5.5vw, 72px)/0.92 var(--font-display); letter-spacing: -0.025em; text-transform: uppercase; margin: 0; }
+.bi-section-head__title .bi-accent { font-weight: 700; color: var(--accent); }
+.bi-section-head__intro { margin: 0; max-width: 52ch; color: var(--ink-2); font-size: 18px; line-height: 1.6; }
+
+/* ---------- Links ---------- */
+.bi-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  border-radius: 2px;
+  transition: color var(--duration-fast) var(--ease-standard), text-decoration-thickness var(--duration-fast) var(--ease-standard);
+}
+.bi-link:hover { color: var(--accent-hover); text-decoration-thickness: 2px; }
+.bi-link--quiet { color: var(--ink-2); text-decoration-color: var(--line-control); }
+.bi-link--quiet:hover { color: var(--ink); text-decoration-color: currentColor; }
+.bi-link--arrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; text-decoration: none; display: inline-flex; gap: 8px; align-items: center; padding: 6px 0; }
+.bi-link--arrow::after { content: "\2192"; transition: transform var(--duration-fast) var(--ease-standard); }
+.bi-link--arrow:hover::after { transform: translateX(4px); }
+
+/* ---------- Error message ---------- */
+.bi-error {
+  display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start;
+  padding: 14px 18px;
+  background: var(--error-bg);
+  border-radius: var(--radius-md);
+  color: var(--ink);
+}
+.bi-error__icon { grid-row: span 2; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--error); color: var(--error); font: 700 13px/1 var(--font-mono); margin-top: 1px; }
+.bi-error__label { font: 500 11px/1.6 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--error); }
+.bi-error__text { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
+
+.bi-notice--success { color: var(--success); font: 500 12px/1.3 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; display: inline-flex; gap: 8px; align-items: center; }
+.bi-notice--success::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+/* ---------- Motion helpers ---------- */
+/* Opening a form: add .bi-enter to the form wrapper when it mounts */
+.bi-enter { animation: bi-enter var(--duration-base) var(--ease-enter) both; }
+@keyframes bi-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+/* Deleting an item: wrap the item in .bi-removable, add .is-removing, remove from state on transitionend */
+.bi-removable { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows var(--duration-delete) var(--ease-exit), opacity var(--duration-delete) var(--ease-exit), transform var(--duration-delete) var(--ease-exit); }
+.bi-removable > * { overflow: hidden; min-height: 0; }
+.bi-removable.is-removing { grid-template-rows: 0fr; opacity: 0; transform: translateX(-12px); }
+@media (prefers-reduced-motion: reduce) {
+  .bi-enter { animation: none; }
+  .bi-removable.is-removing { transform: none; }
+  .bi-btn--ai::before, .bi-btn--ai::after { animation: none !important; }
+}

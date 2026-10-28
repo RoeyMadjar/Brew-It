@@ -1,0 +1,205 @@
+/* Brew It — generated from tokens.json */
+:root, [data-theme="dark"] {
+  --palette-black: #17110c; /* Source swatch: Black (kuro-iro). Aliased by bg-000. Never use raw in components; use the role tokens. */
+  --palette-vandyke-brown: #3b2516; /* Source swatch: Vandyke Brown (kogecha-iro). Base page colour of the brand. Aliased by bg-300; also gradient stops. */
+  --palette-raw-sienna: #b5612a; /* Source swatch: Raw Sienna (hiwada-iro). Base page colour. Graphic use only (gradients, glows, large display text 24px+ on bg-000/bg-100). Fails 4.5:1 for small text. */
+  --palette-deep-indigo: #262a33; /* Source swatch: Deep Indigo (kon-iro). Base page colour. Aliased by inset-200: the cool counterweight for version-level surfaces. */
+  --palette-english-red: #a8321a; /* Source swatch: English Red (kaba-iro). Aliased by danger. Fill only, with ink on top. */
+  --palette-ivory-buff: #d6bd8e; /* Source swatch: Ivory Buff (shiracha). Aliased by ink-2. */
+  --palette-vistoris-lake: #6b3a2c; /* Source swatch: Vistoris Lake (kurikawa-iro). Gradient stop and mid-tone; never text. */
+  --palette-violet-carmine: #5c1c1a; /* Source swatch: Violet Carmine (kuwazome-iro). Gradient stop (Ask AI panel wash, hero glow edge); never text. */
+  --palette-laelia-pink: #b36a86; /* Source swatch: Laelia Pink (benifuji). Sparingly: changed-value marker line, Ask AI hover gradient stop. */
+  --palette-pinkish-cinnamon: #e0a25e; /* Source swatch: Pinkish Cinnamon (tonoko-iro). Aliased by accent. */
+  --palette-burnt-sienna: #8a2a12; /* Source swatch: Burnt Sienna (kuriume). Aliased by danger-hover; hero gradient stop. */
+  --palette-soft-green: #9cbf9f; /* Source swatch: soft green (byakuroku, approx.). Aliased by success. Sparingly. */
+  --bg-000: var(--palette-black); /* Page background. The ground everything sits on; carries the grain overlay. */
+  --bg-100: #1f1711; /* Raised surface: recipe cards, compact navbar, menus. */
+  --bg-200: #2a1e16; /* Hover state of bg-100 surfaces; secondary button hover fill. */
+  --bg-300: var(--palette-vandyke-brown); /* Selected / pressed surfaces, tag fills, the strongest warm surface. ink-3 is the lightest text allowed here (4.95:1). */
+  --inset-100: #1b1e25; /* Tinted inset panel background (Version History, Ask AI panel). Cool indigo counterpoint to the brown page. */
+  --inset-200: var(--palette-deep-indigo); /* Version-level input fill and rows inside inset-100 panels. */
+  --ink: #f1e7d3; /* Primary text: headlines, body, values. 15.7:1 on bg-000, 11.7:1 on bg-300, 13.4:1 on inset-100. */
+  --ink-2: var(--palette-ivory-buff); /* Secondary text: lead paragraphs, card meta, field labels. 10.6:1 on bg-000, 7.9:1 on bg-300 and inset-200. */
+  --ink-3: #a8957a; /* Muted text: technical labels, timestamps, 'now X' lines, placeholders. 6.5:1 on bg-000, 4.95:1 on bg-300 and inset-200 (lowest allowed grounds). */
+  --ink-disabled: #6f604f; /* Disabled control text only (exempt from contrast). Always pair a disabled control with a readable note in ink-3. */
+  --on-accent: var(--palette-black); /* Text and icons on accent fills (primary button). 8.5:1 on accent. */
+  --accent: var(--palette-pinkish-cinnamon); /* The one warm accent: primary button fill, links, active nav item, selection. 8.7:1 on bg-000, 6.5:1 on bg-300. */
+  --accent-hover: #ebb478; /* Primary button hover fill and link hover. on-accent on it 10.1:1. */
+  --accent-press: #c98a47; /* Primary button pressed fill. on-accent on it 6.4:1. */
+  --accent-deep: var(--palette-raw-sienna); /* Accent for graphics: gradient stops, version rail, progress. Not for text under 24px. */
+  --gradient-dusk: #7a3d55; /* Mid stop of the Ask AI hover gradient (a darkened Laelia Pink). ink on it: 6.5:1. Gradient use only. */
+  --line-grid: rgba(214, 189, 142, 0.10); /* Thin decorative grid lines across the page (editorial grid). Never the only boundary of a control. */
+  --line-hairline: rgba(214, 189, 142, 0.20); /* Dividers, card outlines, section rules, navbar bottom rule. */
+  --line-control: #8a7660; /* Borders of inputs and secondary buttons on warm surfaces. 4.3:1 on bg-000, 3.3:1 on bg-300. */
+  --line-control-cool: #6b7487; /* Border of version-level inputs on inset-100 / inset-200. 3.5:1 on inset-100, 3.1:1 on inset-200. */
+  --focus-ring: var(--ink); /* Keyboard focus ring: 2px solid, 3px offset, on every interactive element. 11.7:1+ on every surface; reads on the accent fill via the offset gap. */
+  --changed: #e29bb6; /* Text of an old value that differs from the current recipe. 8.6:1 on bg-000, 7.6:1 on inset-100. Always with a strike or marker and a 'now X' line. */
+  --changed-bg: rgba(179, 106, 134, 0.18); /* Background tint behind a changed value. changed text on it: 6.2:1+. */
+  --changed-line: var(--palette-laelia-pink); /* 2px underline / marker of a changed value. */
+  --error: #f2937b; /* Error text and the error icon/label. 8.2:1 on bg-000, 6.3:1 on bg-300. */
+  --error-bg: rgba(168, 50, 26, 0.16); /* Background of an error message block. error on it: 7.4:1. */
+  --danger: var(--palette-english-red); /* Danger (delete) button fill. ink on it: 5.5:1. */
+  --danger-hover: var(--palette-burnt-sienna); /* Danger button hover fill (darkens). ink on it: 7.1:1. */
+  --danger-press: #6f200d; /* Danger button pressed fill. */
+  --success: var(--palette-soft-green); /* Success text ('Saved', 'Brew logged') with a word, never colour alone. 9.3:1 on bg-000. */
+  --success-bg: rgba(156, 191, 159, 0.12); /* Background of a success notice. */
+  --shadow-none: none; /* Default for cards, buttons, panels. */
+  --shadow-edge: inset 0 1px 0 rgba(241, 231, 211, 0.06); /* 1px top highlight on raised surfaces (cards, compact navbar) so they catch light on the dark page. */
+  --shadow-float: 0 18px 48px rgba(0, 0, 0, 0.5); /* Floating layers only: menus, select dropdowns, the compact navbar while scrolling. */
+}
+:root {
+  --space-1: 4px; /* Label-to-value gap inside a data field. */
+  --space-2: 8px; /* Icon-to-text gap, chip padding, 'now X' line offset. */
+  --space-3: 12px; /* Input vertical padding, gap between stacked buttons. */
+  --space-4: 16px; /* Mobile page gutter, input horizontal padding. */
+  --space-5: 24px; /* Card padding, desktop grid gutter. */
+  --space-6: 32px; /* Gap between form groups, inset panel padding. */
+  --space-7: 48px; /* Gap between a section heading and its content. */
+  --space-8: 64px; /* Desktop page gutter, gap between card rows on large grids. */
+  --space-9: 96px; /* Gap between page sections on mobile. */
+  --space-10: 128px; /* Gap between page sections on desktop. */
+  --space-11: 192px; /* Hero top/bottom breathing room. Empty space is part of the look. */
+  --radius-none: 0; /* Grid lines, full-bleed images, colour blocks. */
+  --radius-sm: 6px; /* Chips, data tags, the changed-value highlight. */
+  --radius-md: 12px; /* Inputs (version-level), menus, error message blocks. */
+  --radius-lg: 20px; /* Recipe cards, tinted inset panels. */
+  --radius-xl: 32px; /* Hero image frames, large feature panels. */
+  --radius-pill: 999px; /* All buttons, the compact navbar, badges. */
+  --duration-instant: 80ms; /* Pressed states, checkbox ticks. */
+  --duration-fast: 160ms; /* Hover colour changes, focus ring appearance. */
+  --duration-base: 260ms; /* Opening an inline form, navbar large-to-compact. */
+  --duration-slow: 420ms; /* Expanding / collapsing panels (Version History, Ask AI). */
+  --duration-delete: 320ms; /* Deleting an item: fade + collapse height. */
+  --duration-scroll: 700ms; /* Smooth scroll to an anchor (JS-driven). CSS scroll-behavior: smooth only when motion is allowed. */
+  --duration-ambient: 2400ms; /* The Ask AI hover gradient drift. Off under reduced motion. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1); /* Default for colour and layout changes. */
+  --ease-enter: cubic-bezier(0.16, 1, 0.3, 1); /* Things appearing: forms opening, panels expanding. Long calm tail. */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* Things leaving: deleting items, closing panels. */
+  --ease-scroll: cubic-bezier(0.65, 0, 0.35, 1); /* Smooth scroll (JS) and navbar shrink. */
+  --layout-max: 1440px; /* Max page width; grid lines run to this edge. */
+  --layout-content: 1200px; /* Main content column width. */
+  --layout-measure: 68ch; /* Max line length for body text. */
+  --layout-columns: 12; /* Desktop grid columns (4 on mobile, 8 on tablet). */
+  --nav-height-lg: 120px; /* Large navbar at page top. */
+  --nav-height-sm: 64px; /* Compact navbar after scroll. */
+  --control-height: 48px; /* Buttons and inputs. */
+  --control-height-sm: 36px; /* Small buttons inside cards and panels. */
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-accent: "Archivo", "Arial Black", sans-serif;
+  --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --text-display-hero: 800 160px/0.86 var(--font-accent); /* One per page at most: landing hero, recipe title on its own page. Uppercase. In CSS use clamp(64px, 12vw, 160px). */
+  --text-display-xl: 800 112px/0.88 var(--font-display); /* Page titles (My Recipes, Brew Log). Uppercase. clamp(52px, 8vw, 112px). */
+  --text-display-lg: 800 72px/0.92 var(--font-display); /* Section headings on long pages. Uppercase. clamp(40px, 5.5vw, 72px). */
+  --text-display-md: 700 48px/0.95 var(--font-display); /* Recipe card title on large cards, panel titles. Uppercase or Title Case. */
+  --text-heading: 700 28px/1.05 var(--font-display); /* Sub-section headings, card titles in dense grids, the navbar wordmark (compact). */
+  --text-accent-xl: italic 800 96px/0.9 var(--font-accent); /* Wide extended italic (Archivo at font-stretch 125%, set by the bi-accent class). Version numbers, one emphasised word in a headline. Never a full sentence. */
+  --text-accent-md: italic 700 40px/1 var(--font-accent); /* Inline accent word next to display text, version badge on cards. Extended via bi-accent. */
+  --text-lead: 400 26px/1.38 var(--font-body); /* Large calm text: intros, About, empty states. Max 28ch-36ch per line. */
+  --text-body-lg: 400 18px/1.6 var(--font-body); /* Recipe method steps, brew notes, recipe-level input values. */
+  --text-body: 400 16px/1.6 var(--font-body); /* Default UI text, buttons (weight 500), form help text. Max 68ch. */
+  --text-body-sm: 400 14px/1.5 var(--font-body); /* Meta lines, 'now X' lines, error messages. */
+  --text-data: 400 16px/1.3 var(--font-mono); /* Measured values in data fields and version-level inputs. Tabular numbers. */
+  --text-label: 500 12px/1.35 var(--font-mono); /* Small technical labels: field labels, card meta, nav items. Uppercase. */
+  --text-label-xs: 500 11px/1.3 var(--font-mono); /* Corner annotations, grid-line captions, timestamps. Uppercase. Smallest size allowed. */
+}
+.display-hero {
+  font-family: var(--font-accent);
+  font-size: 160px;
+  line-height: 0.86;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+.display-xl {
+  font-family: var(--font-display);
+  font-size: 112px;
+  line-height: 0.88;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.display-lg {
+  font-family: var(--font-display);
+  font-size: 72px;
+  line-height: 0.92;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
+.display-md {
+  font-family: var(--font-display);
+  font-size: 48px;
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.heading {
+  font-family: var(--font-display);
+  font-size: 28px;
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.accent-xl {
+  font-family: var(--font-accent);
+  font-size: 96px;
+  line-height: 0.9;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-style: italic;
+}
+.accent-md {
+  font-family: var(--font-accent);
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-style: italic;
+}
+.lead {
+  font-family: var(--font-body);
+  font-size: 26px;
+  line-height: 1.38;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+.body-lg {
+  font-family: var(--font-body);
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body-sm {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.data {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+.label-xs {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
