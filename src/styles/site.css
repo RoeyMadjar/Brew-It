@@ -702,6 +702,16 @@ textarea.rf-input { min-height: 64px; padding: 10px 12px; }
 .rf .rf-input:focus { border-color: var(--ink); }
 .rf .rf-input:focus-visible { outline: none; }
 
+/* Autofilled inputs keep the design's colours instead of the browser's yellow/blue fill */
+.bi-input:-webkit-autofill,
+.bi-input:-webkit-autofill:hover,
+.bi-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--ink);
+  caret-color: var(--ink);
+  transition: background-color 600000s 0s, color 600000s 0s;
+}
+.bi-input:autofill { background-color: transparent; }
+
 /* ---------- No "sticky hover" on phones and touch screens ----------
    After a tap, mobile browsers keep the element in :hover until you tap somewhere else.
    On phones (narrow screens, touch pointers, or no hover) every hover look is reset to the
