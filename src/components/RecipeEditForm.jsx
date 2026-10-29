@@ -23,7 +23,11 @@ function RecipeEditForm({
         event.target.value.trim() === "" ? "Please fill out this field." : "",
       );
     }
-    setFormData({ ...formData, [event.target.name]: event.target.value });
+    // The name input is called "recipeTitle" so browsers don't treat it as a
+    // person's name; it still saves to the recipe's `name` field.
+    const field =
+      event.target.name === "recipeTitle" ? "name" : event.target.name;
+    setFormData({ ...formData, [field]: event.target.value });
   }
 
   function handleSubmit(event) {
@@ -58,7 +62,8 @@ function RecipeEditForm({
             <input
               className="bi-input bi-input--recipe rf__name"
               type="text"
-              name="name"
+              name="recipeTitle"
+              autoComplete="off"
               aria-label="Recipe name"
               placeholder="Recipe's name"
               required
@@ -73,6 +78,7 @@ function RecipeEditForm({
               className="bi-input bi-input--recipe"
               type="text"
               name="bean"
+              autoComplete="off"
               required
               value={formData.bean}
               onChange={handleChange}
@@ -84,6 +90,7 @@ function RecipeEditForm({
               className="bi-input bi-input--recipe"
               type="text"
               name="method"
+              autoComplete="off"
               required
               value={formData.method}
               onChange={handleChange}
@@ -162,6 +169,7 @@ function RecipeEditForm({
               id={`${id}-grind`}
               type="text"
               name="grindSize"
+              autoComplete="off"
               required
               value={formData.grindSize}
               onChange={handleChange}
