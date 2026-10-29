@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import About from "./components/About.jsx";
 import AskAi from "./components/AskAi.jsx";
 import Header from "./components/Header.jsx";
@@ -14,6 +14,9 @@ import {
   DELETE_MS,
   FORM_LEAVE_MS,
   motionDelay,
+  NEW_CARD_MS,
+  prefersReducedMotion,
+  SAVE_GROW_MS,
 } from "./utils/motion.js";
 import { getRecipeCreatedAt } from "./utils/recipe.js";
 import {
@@ -92,10 +95,49 @@ function App() {
   // Drives the Create card's open/close animation (data-open). It's false
   // for the first frame after opening, so the opening can animate.
   const [isCreateShown, setIsCreateShown] = useState(false);
+  // The recipe just saved from Create: its card gets is-new for a moment.
+  const [newRecipeId, setNewRecipeId] = useState(null);
+  const createWrapperRef = useRef(null);
+  const newCardRef = useRef(null);
+  // The Create form's height when it was saved: the new card grows from it.
+  const savedFormHeightRef = useRef(0);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
   }, [recipes]);
+
+  // The new card replaces the Create form in the same render, then grows
+  // from the form's height to its own. useLayoutEffect runs before the
+  // browser paints, so the card never shows at full height first.
+  useLayoutEffect(() => {
+    const wrapper = newCardRef.current;
+    if (newRecipeId === null || wrapper === null || prefersReducedMotion()) {
+      return;
+    }
+    function finish() {
+      wrapper.removeEventListener("transitionend", handleTransitionEnd);
+      wrapper.style.height = "";
+      wrapper.style.overflow = "";
+      wrapper.style.transition = "";
+    }
+    // Transitions inside the card bubble up too: only the wrapper's height
+    // ending counts.
+    function handleTransitionEnd(event) {
+      if (event.target === wrapper && event.propertyName === "height") {
+        finish();
+      }
+    }
+    const cardHeight = wrapper.getBoundingClientRect().height;
+    wrapper.style.height = `${savedFormHeightRef.current}px`;
+    wrapper.style.overflow = "hidden";
+    // Reading the size forces a reflow, so the browser applies the start
+    // height before the transition is set.
+    wrapper.getBoundingClientRect();
+    wrapper.style.transition = `height ${SAVE_GROW_MS}ms cubic-bezier(0.16, 1, 0.3, 1)`;
+    wrapper.style.height = `${cardHeight}px`;
+    wrapper.addEventListener("transitionend", handleTransitionEnd);
+    return finish;
+  }, [newRecipeId]);
 
   // Only one edit at a time: while one is open, other actions just remind
   // the user to finish it. Returns true when the action should stop.
@@ -157,7 +199,8 @@ function App() {
     afterNextFrame(() => setIsCreateShown(true));
   }
 
-  // Save and Cancel both collapse the card first, then remove the form.
+  // Cancel collapses the card first, then removes the form. (Save swaps the
+  // form for the new card instead: see handleCreateRecipe.)
   function closeCreate() {
     setIsCreateShown(false);
     setTimeout(() => setActiveForm(null), motionDelay(CREATE_CLOSE_MS));
@@ -312,8 +355,21 @@ function App() {
       ],
     };
 
+    // Measured before the form is removed; the new card grows from it.
+    savedFormHeightRef.current =
+      createWrapperRef.current.getBoundingClientRect().height;
+    // One render: the form goes and the new card (newest, so at the top)
+    // takes its place, with no closing animation.
     setRecipes([...recipes, newRecipe]);
-    closeCreate();
+    setActiveForm(null);
+    setIsCreateShown(false);
+    setNewRecipeId(newRecipe.id);
+    // Only clear it if no newer recipe has been saved since.
+    setTimeout(() => {
+      setNewRecipeId((currentId) =>
+        currentId === newRecipe.id ? null : currentId,
+      );
+    }, NEW_CARD_MS);
   }
 
   function handleSaveNewVersion(recipeId, formData) {
@@ -427,6 +483,7 @@ function App() {
                 <div
                   className="rc-wrap rc-wrap--create collapse"
                   data-open={isCreateShown}
+                  ref={createWrapperRef}
                 >
                   <div>
                     <article className="rc is-editing" aria-label="New recipe">
@@ -457,17 +514,21 @@ function App() {
                   activeForm?.type === "editVersion" &&
                   activeForm.recipeId === recipe.id;
                 const isAskAiOpen = askAiRecipeId === recipe.id;
+                const isNew = newRecipeId === recipe.id;
+                let wrapperClass = "rc-wrap bi-removable";
+                if (removingRecipeId === recipe.id) {
+                  wrapperClass += " is-removing";
+                } else if (isNew) {
+                  wrapperClass += " is-new";
+                }
 
                 return (
                   // The key keeps each card's DOM tied to its recipe, so after a
                   // delete the next card doesn't replay its open animation.
                   <div
                     key={recipe.id}
-                    className={
-                      removingRecipeId === recipe.id
-                        ? "rc-wrap bi-removable is-removing"
-                        : "rc-wrap bi-removable"
-                    }
+                    className={wrapperClass}
+                    ref={isNew ? newCardRef : null}
                   >
                     <article
                       className={
