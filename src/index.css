@@ -2,6 +2,15 @@ body {
   overflow-anchor: none;
 }
 
+/* No rubber-band bounce past the page's edges on desktop (trackpad): at the
+   top the page slid under the fixed "Brew It" title. Phones keep it (and
+   Android's pull-to-refresh). */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    overscroll-behavior-y: none;
+  }
+}
+
 /* Hide the up/down spinner arrows on number inputs (all forms). */
 input[type="number"] {
   appearance: textfield;
