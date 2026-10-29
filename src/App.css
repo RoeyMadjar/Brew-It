@@ -3,13 +3,6 @@
   text-align: left;
 }
 
-/* Subtitle under the recipe name / version heading. */
-.rc .version-date {
-  margin: 0 0 12px;
-  font-size: 0.9em;
-  color: #6f6461;
-}
-
 /* Hide the up/down spinner arrows on number inputs (all forms). */
 input[type="number"] {
   appearance: textfield;
@@ -21,17 +14,7 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
-/* Warm tint and frame set past versions apart from the current recipe.
-   Muted text (#6f6461) on it is ~5.2:1. */
-.version-history {
-  margin-top: 16px;
-  padding: 8px 12px;
-  border: 1px solid #e0d6c8;
-  border-radius: 8px;
-  background-color: #f5efe6;
-}
-
-/* Same tinted frame as Version History. */
+/* Tinted frame for the Ask AI panel. */
 .ask-ai {
   margin-top: 16px;
   padding: 8px 12px;
@@ -80,29 +63,4 @@ input[type="number"]::-webkit-outer-spin-button {
   margin-top: 0;
   font-size: 0.85em;
   color: #6f6461;
-}
-
-.version-entry {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #e0d6c8;
-}
-
-/* Same amber border as an edited card; padding keeps content off it.
-   White so the pale input fields stay visible on the tinted history. */
-.version-entry.editing {
-  padding: 12px;
-  border: 1px solid #b5793a;
-  border-radius: 8px;
-  background-color: #fff;
-}
-
-.version-entry h3 {
-  margin: 0 0 2px;
-}
-
-.version-actions {
-  display: flex;
-  gap: 8px;
-  margin-top: 8px;
 }

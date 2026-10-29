@@ -88,6 +88,10 @@ function App() {
   const [openMenuId, setOpenMenuId] = useState(null);
   // The recipe playing its delete animation (removed from state after it).
   const [removingRecipeId, setRemovingRecipeId] = useState(null);
+  // The old version playing its delete animation.
+  const [removingVersionId, setRemovingVersionId] = useState(null);
+  // Open Version Histories, { [recipeId]: true } (several can be open).
+  const [openHistoryIds, setOpenHistoryIds] = useState({});
   // True for one frame after a delete: turns transitions off (site.css).
   const [isSettling, setIsSettling] = useState(false);
   // True while a cancelled form fades out, before activeForm is cleared.
@@ -146,6 +150,7 @@ function App() {
     // it's done.
     if (
       removingRecipeId !== null ||
+      removingVersionId !== null ||
       isFormLeaving ||
       (activeForm?.type === "create" && !isCreateShown)
     ) {
@@ -314,28 +319,59 @@ function App() {
       return;
     }
 
-    setRecipes(
-      recipes.map((recipe) => {
-        if (recipe.id !== recipeId) {
-          return recipe;
-        }
-        return {
-          ...recipe,
-          versions: recipe.versions.filter(
-            (version) => version.id !== versionId,
-          ),
-        };
-      }),
-    );
+    function removeVersion() {
+      setRecipes((currentRecipes) =>
+        currentRecipes.map((recipe) => {
+          if (recipe.id !== recipeId) {
+            return recipe;
+          }
+          return {
+            ...recipe,
+            versions: recipe.versions.filter(
+              (version) => version.id !== versionId,
+            ),
+          };
+        }),
+      );
 
-    // Deleting the current version makes the newest history version current,
-    // so it leaves the history and can't stay the expanded one.
-    const newCurrentId = isCurrent
-      ? recipeToEdit.versions[lastIndex - 1].id
-      : null;
-    if (expandedVersionId === versionId || expandedVersionId === newCurrentId) {
-      setExpandedVersionId(null);
+      // Deleting the current version makes the newest history version
+      // current, so it leaves the history and can't stay the expanded one.
+      const newCurrentId = isCurrent
+        ? recipeToEdit.versions[lastIndex - 1].id
+        : null;
+      setExpandedVersionId((currentId) =>
+        currentId === versionId || currentId === newCurrentId
+          ? null
+          : currentId,
+      );
     }
+
+    // The current version is removed instantly; an old one animates out of
+    // the history first (is-removing), like a deleted recipe.
+    if (isCurrent) {
+      removeVersion();
+      return;
+    }
+    setRemovingVersionId(versionId);
+    setTimeout(() => {
+      removeVersion();
+      setRemovingVersionId(null);
+      setIsSettling(true);
+      afterNextFrame(() => setIsSettling(false));
+    }, motionDelay(DELETE_MS));
+  }
+
+  // While one of its versions is being edited the history stays open:
+  // clicking it shows the one-edit reminder instead.
+  function handleToggleHistory(recipeId, isEditingVersionHere) {
+    if (isEditingVersionHere) {
+      blockIfEditing();
+      return;
+    }
+    setOpenHistoryIds({
+      ...openHistoryIds,
+      [recipeId]: !openHistoryIds[recipeId],
+    });
   }
 
   function handleCreateRecipe(formData) {
@@ -514,6 +550,7 @@ function App() {
                   activeForm?.type === "editVersion" &&
                   activeForm.recipeId === recipe.id;
                 const isAskAiOpen = askAiRecipeId === recipe.id;
+                const isHistoryOpen = Boolean(openHistoryIds[recipe.id]);
                 const isNew = newRecipeId === recipe.id;
                 let wrapperClass = "rc-wrap bi-removable";
                 if (removingRecipeId === recipe.id) {
@@ -701,117 +738,174 @@ function App() {
                       {/* Outside the ternary above, so it stays mounted (and keeps
                     its answer) while Edit or New Version is open. */}
                       {isAskAiOpen && <AskAi key={recipe.id} recipe={recipe} />}
-                      <details className="version-history">
-                        {/* preventDefault stops <details> from closing while one of
-                      its versions is being edited. */}
-                        <summary
-                          onClick={(event) => {
-                            if (isEditingVersionHere) {
-                              event.preventDefault();
-                              blockIfEditing();
+                      <section
+                        className="bi-inset rc__vh"
+                        data-open={isHistoryOpen}
+                      >
+                        <div className="bi-inset__head">
+                          <button
+                            type="button"
+                            className="bi-inset__toggle"
+                            aria-expanded={isHistoryOpen}
+                            aria-controls={`vh-${recipe.id}`}
+                            onClick={() =>
+                              handleToggleHistory(
+                                recipe.id,
+                                isEditingVersionHere,
+                              )
                             }
-                          }}
+                          >
+                            <span className="vh__title">
+                              <span className="bi-inset__title">
+                                Version History
+                              </span>
+                              <span className="vh__count">
+                                ({previousVersions.length})
+                              </span>
+                            </span>
+                            <span
+                              className="bi-inset__chev"
+                              aria-hidden="true"
+                            ></span>
+                          </button>
+                        </div>
+                        {/* inert while closed: the collapsed rows are only
+                        visually hidden, so this keeps Tab out of them. */}
+                        <div
+                          className="bi-inset__body"
+                          id={`vh-${recipe.id}`}
+                          inert={!isHistoryOpen}
                         >
-                          Version History ({previousVersions.length})
-                        </summary>
-                        {previousVersions.map((version, index) => {
-                          const versionNumber = previousVersions.length - index;
-                          const isVersionExpanded =
-                            expandedVersionId === version.id;
-                          const isEditVersionOpen =
-                            isEditingVersionHere &&
-                            activeForm.versionId === version.id;
+                          <div>
+                            <div className="bi-inset__content">
+                              {previousVersions.map((version, index) => {
+                                const versionNumber =
+                                  previousVersions.length - index;
+                                const isVersionExpanded =
+                                  expandedVersionId === version.id;
+                                const isEditVersionOpen =
+                                  isEditingVersionHere &&
+                                  activeForm.versionId === version.id;
 
-                          return (
-                            <div
-                              key={version.id}
-                              className={
-                                isEditVersionOpen
-                                  ? "version-entry editing"
-                                  : "version-entry"
-                              }
-                            >
-                              <h3>Version {versionNumber}</h3>
-                              <p className="version-date">
-                                {formatDate(version.createdAt)}
-                              </p>
-                              {isEditVersionOpen ? (
-                                <div className={formSlotClass}>
-                                  <RecipeEditForm
-                                    initialValues={versionToFormValues(version)}
-                                    onSave={(formData) =>
-                                      handleSaveVersionEdit(
-                                        recipe.id,
-                                        version.id,
-                                        formData,
-                                      )
-                                    }
-                                    onCancel={() =>
-                                      handleCancelVersionEdit(version.id)
-                                    }
-                                    showRecipeFields={false}
-                                  />
-                                </div>
-                              ) : (
-                                <>
-                                  <VersionSummary
-                                    version={version}
-                                    compareTo={latestVersion}
-                                  />
+                                return (
                                   <div
-                                    className="collapse"
-                                    data-open={isVersionExpanded}
+                                    key={version.id}
+                                    className={
+                                      removingVersionId === version.id
+                                        ? "bi-removable is-removing"
+                                        : "bi-removable"
+                                    }
                                   >
                                     <div>
-                                      <VersionDetails
-                                        version={version}
-                                        compareTo={latestVersion}
-                                      />
+                                      <div
+                                        className={
+                                          isEditVersionOpen
+                                            ? "vrow is-editing"
+                                            : "vrow"
+                                        }
+                                      >
+                                        <div className="vrow__head">
+                                          <h4 className="vrow__v">
+                                            Version {versionNumber}
+                                          </h4>
+                                          <span className="rc__date">
+                                            {formatDate(version.createdAt)}
+                                          </span>
+                                        </div>
+                                        {isEditVersionOpen ? (
+                                          <div className={formSlotClass}>
+                                            <RecipeEditForm
+                                              initialValues={versionToFormValues(
+                                                version,
+                                              )}
+                                              onSave={(formData) =>
+                                                handleSaveVersionEdit(
+                                                  recipe.id,
+                                                  version.id,
+                                                  formData,
+                                                )
+                                              }
+                                              onCancel={() =>
+                                                handleCancelVersionEdit(
+                                                  version.id,
+                                                )
+                                              }
+                                              showRecipeFields={false}
+                                            />
+                                          </div>
+                                        ) : (
+                                          <>
+                                            <VersionSummary
+                                              version={version}
+                                              compareTo={latestVersion}
+                                            />
+                                            <div
+                                              className="collapse"
+                                              data-open={isVersionExpanded}
+                                            >
+                                              <div>
+                                                <VersionDetails
+                                                  version={version}
+                                                  compareTo={latestVersion}
+                                                />
+                                              </div>
+                                            </div>
+                                            <div className="vrow__actions">
+                                              <button
+                                                type="button"
+                                                className="bi-btn bi-btn--quiet bi-btn--sm"
+                                                aria-expanded={
+                                                  isVersionExpanded
+                                                }
+                                                onClick={() =>
+                                                  setExpandedVersionId(
+                                                    isVersionExpanded
+                                                      ? null
+                                                      : version.id,
+                                                  )
+                                                }
+                                              >
+                                                {isVersionExpanded
+                                                  ? "Hide Version"
+                                                  : "View Version"}
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="bi-btn bi-btn--quiet bi-btn--sm"
+                                                onClick={() =>
+                                                  handleStartVersionEdit(
+                                                    recipe.id,
+                                                    version.id,
+                                                    isVersionExpanded,
+                                                  )
+                                                }
+                                              >
+                                                Edit
+                                              </button>
+                                              <button
+                                                type="button"
+                                                className="bi-btn bi-btn--quiet bi-btn--sm btn-del"
+                                                onClick={() =>
+                                                  handleDeleteVersion(
+                                                    recipe.id,
+                                                    version.id,
+                                                  )
+                                                }
+                                              >
+                                                Delete Version
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="version-actions">
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        setExpandedVersionId(
-                                          isVersionExpanded ? null : version.id,
-                                        )
-                                      }
-                                    >
-                                      {isVersionExpanded
-                                        ? "Hide Version"
-                                        : "View Version"}
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleStartVersionEdit(
-                                          recipe.id,
-                                          version.id,
-                                          isVersionExpanded,
-                                        )
-                                      }
-                                    >
-                                      Edit
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        handleDeleteVersion(
-                                          recipe.id,
-                                          version.id,
-                                        )
-                                      }
-                                    >
-                                      Delete Version
-                                    </button>
-                                  </div>
-                                </>
-                              )}
+                                );
+                              })}
                             </div>
-                          );
-                        })}
-                      </details>
+                          </div>
+                        </div>
+                      </section>
                     </article>
                   </div>
                 );
