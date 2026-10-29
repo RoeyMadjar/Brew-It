@@ -48,37 +48,65 @@ function AskAi({ recipe }) {
     }
   }
 
+  // The textarea grows with its text via CSS (field-sizing: content).
+  // Browsers without it (Firefox) get the height set here instead.
+  function handleQuestionChange(event) {
+    const textarea = event.target;
+    if (!CSS.supports("field-sizing", "content")) {
+      textarea.style.height = "auto";
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+    setQuestion(textarea.value);
+  }
+
   return (
-    <div className="ask-ai">
-      <form onSubmit={handleSubmit}>
-        <label htmlFor={`${id}-question`}>Your question</label>
+    <div className="ai">
+      <form className="ai__form" onSubmit={handleSubmit}>
+        <label className="bi-field__label" htmlFor={`${id}-question`}>
+          Your question
+        </label>
         <textarea
+          className="bi-input bi-input--version ai__q"
           id={`${id}-question`}
           value={question}
-          onChange={(event) => setQuestion(event.target.value)}
+          onChange={handleQuestionChange}
           placeholder="How can I make it less bitter?"
           required
           maxLength={500}
           rows={3}
         />
-        <button type="submit" disabled={status === "loading"}>
-          {status === "loading" ? "Asking the AI…" : "Ask"}
-        </button>
+        <div className="ai__row">
+          <button
+            type="submit"
+            className="bi-btn bi-btn--primary bi-btn--sm"
+            disabled={status === "loading"}
+            aria-busy={status === "loading"}
+          >
+            {status === "loading" ? "Asking the AI…" : "Ask"}
+          </button>
+        </div>
       </form>
       {/* Always rendered so screen readers notice when the text appears. */}
-      <p className="visually-hidden" aria-live="polite">
+      <p className="bi-visually-hidden" aria-live="polite">
         {status === "loading" ? "Asking the AI…" : ""}
       </p>
       {status === "error" && (
-        <p className="ask-ai-error" role="alert">
-          {errorMessage}
-        </p>
+        <div className="bi-error bi-enter" role="alert">
+          <span className="bi-error__icon" aria-hidden="true">
+            !
+          </span>
+          <span className="bi-error__label">Error</span>
+          <p className="bi-error__text">{errorMessage}</p>
+        </div>
       )}
       {status === "success" && (
-        <>
-          <p className="ask-ai-answer">{answer}</p>
-          <p className="ask-ai-note">AI suggestion. Try it as a New Version.</p>
-        </>
+        <div className="ai__answer bi-enter">
+          <p className="ai__text">{answer}</p>
+          <p className="ai__note">
+            <span className="bi-btn__spark" aria-hidden="true"></span>
+            AI suggestion. Try it as a New Version.
+          </p>
+        </div>
       )}
     </div>
   );

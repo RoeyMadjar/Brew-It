@@ -10,6 +10,7 @@ import VersionSummary from "./components/VersionSummary.jsx";
 import { formatDate } from "./utils/format.js";
 import {
   afterNextFrame,
+  AI_CLOSE_MS,
   CREATE_CLOSE_MS,
   DELETE_MS,
   FORM_LEAVE_MS,
@@ -105,6 +106,11 @@ function App() {
   const newCardRef = useRef(null);
   // The Create form's height when it was saved: the new card grows from it.
   const savedFormHeightRef = useRef(0);
+  // Drives the Ask AI panel's open/close animation, like isCreateShown.
+  const [isAskAiShown, setIsAskAiShown] = useState(false);
+  // The pending "remove the closed panel" timer, so opening another panel
+  // can cancel it before it clears the new one.
+  const askAiTimerRef = useRef(null);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recipes));
@@ -361,6 +367,23 @@ function App() {
     }, motionDelay(DELETE_MS));
   }
 
+  // Close: collapse the panel, then remove it. Open (or reopen mid-close):
+  // mount it closed, then open it a frame later so the transition plays.
+  function handleToggleAskAi(recipeId) {
+    clearTimeout(askAiTimerRef.current);
+    if (askAiRecipeId === recipeId && isAskAiShown) {
+      setIsAskAiShown(false);
+      askAiTimerRef.current = setTimeout(
+        () => setAskAiRecipeId(null),
+        motionDelay(AI_CLOSE_MS),
+      );
+      return;
+    }
+    setAskAiRecipeId(recipeId);
+    setIsAskAiShown(false);
+    afterNextFrame(() => setIsAskAiShown(true));
+  }
+
   // While one of its versions is being edited the history stays open:
   // clicking it shows the one-edit reminder instead.
   function handleToggleHistory(recipeId, isEditingVersionHere) {
@@ -549,7 +572,8 @@ function App() {
                 const isEditingVersionHere =
                   activeForm?.type === "editVersion" &&
                   activeForm.recipeId === recipe.id;
-                const isAskAiOpen = askAiRecipeId === recipe.id;
+                const isAskAiMounted = askAiRecipeId === recipe.id;
+                const isAskAiOpen = isAskAiMounted && isAskAiShown;
                 const isHistoryOpen = Boolean(openHistoryIds[recipe.id]);
                 const isNew = newRecipeId === recipe.id;
                 let wrapperClass = "rc-wrap bi-removable";
@@ -662,11 +686,8 @@ function App() {
                                 type="button"
                                 className="bi-btn bi-btn--ai bi-btn--sm"
                                 aria-expanded={isAskAiOpen}
-                                onClick={() =>
-                                  setAskAiRecipeId(
-                                    isAskAiOpen ? null : recipe.id,
-                                  )
-                                }
+                                aria-controls={`ai-${recipe.id}`}
+                                onClick={() => handleToggleAskAi(recipe.id)}
                               >
                                 <span
                                   className="bi-btn__spark"
@@ -737,7 +758,31 @@ function App() {
                       )}
                       {/* Outside the ternary above, so it stays mounted (and keeps
                     its answer) while Edit or New Version is open. */}
-                      {isAskAiOpen && <AskAi key={recipe.id} recipe={recipe} />}
+                      {isAskAiMounted && (
+                        <div
+                          className="collapse"
+                          id={`ai-${recipe.id}`}
+                          data-open={isAskAiOpen}
+                        >
+                          <div>
+                            <section
+                              className="bi-inset bi-inset--ai bi-grain ai-panel"
+                              aria-label="Ask AI"
+                            >
+                              <div className="ai-panel__head">
+                                <span
+                                  className="bi-btn__spark"
+                                  aria-hidden="true"
+                                ></span>
+                                <span className="bi-label bi-label--xs">
+                                  Ask AI
+                                </span>
+                              </div>
+                              <AskAi key={recipe.id} recipe={recipe} />
+                            </section>
+                          </div>
+                        </div>
+                      )}
                       <section
                         className="bi-inset rc__vh"
                         data-open={isHistoryOpen}

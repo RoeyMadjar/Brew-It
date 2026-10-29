@@ -5,6 +5,8 @@ export const DELETE_MS = 340;
 export const FORM_LEAVE_MS = 170;
 // Create card collapsing closed (.collapse, --duration-base, 260ms).
 export const CREATE_CLOSE_MS = 280;
+// Ask AI panel collapsing closed (.collapse, 260ms) before it's removed.
+export const AI_CLOSE_MS = 300;
 // A saved recipe's card grows from the form's height to its own.
 export const SAVE_GROW_MS = 520;
 // How long a saved card keeps the is-new class (rc-saved runs 2000ms).
