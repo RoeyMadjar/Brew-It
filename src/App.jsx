@@ -24,7 +24,6 @@ import {
   formToVersionFields,
   versionToFormValues,
 } from "./utils/versionForm.js";
-import "./App.css";
 
 const sampleRecipes = [
   {
