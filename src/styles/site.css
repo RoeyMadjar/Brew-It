@@ -105,22 +105,36 @@ html, body { background: var(--bg-000); }
 .head__logo-link:hover .head__logo { opacity: 0.85; }
 .head__logo {
   display: block; width: auto;
-  height: calc(28px + (1 - var(--p)) * 20px); /* 48px on the landing, 28px in the compact navbar */
-  transform: translate(calc((1 - var(--p)) * 16px), calc((1 - var(--p)) * 16px));
+  /* 28px in the compact navbar, scaled up to 48px on the landing (a transform, so the navbar layout never changes) */
+  height: 28px;
+  transform:
+    translate(calc((1 - var(--p)) * 16px), calc((1 - var(--p)) * 16px))
+    scale(calc(1 + (1 - var(--p)) * 20 / 28));
+  transform-origin: right center;
+  will-change: transform;
 }
 
 .head__h1 { margin: 0; font-size: 1em; }
 .head__title {
   position: absolute; z-index: 2;
-  left: calc(var(--gutter) + 20px * var(--p));
-  top: calc(31px + (1 - var(--p)) * 69px);
+  /* Laid out once at full size; the shrink into the navbar is a transform only
+     (no font-size / position change per frame, which lagged in Safari).
+     Compact end point: 20px right, 69px up, scaled to 22px (--title-min = 22 / full size, set in Header.jsx). */
+  --title-shift-x: 20px;
+  left: var(--gutter);
+  top: 100px;
+  transform:
+    translate(calc(var(--title-shift-x) * var(--p)), calc(-69px * var(--p)))
+    scale(calc(1 - (1 - var(--title-min, 1)) * var(--p)));
+  transform-origin: top left;
+  will-change: transform;
   /* Wordmark font: Chillax Bold (Fontshare). @font-face lives in Main.dc.html;
      in the app, self-host Chillax-Bold.woff2 / .woff and declare it next to tokens.css */
   font-family: "Chillax", var(--font-display);
   font-weight: 700;
-  font-size: calc(22px + (1 - var(--p)) * (var(--hero-fs) - 22px));
+  font-size: var(--hero-fs);
   line-height: 0.8;
-  letter-spacing: calc(-0.01em - (1 - var(--p)) * 0.02em);
+  letter-spacing: -0.03em;
   white-space: nowrap;
   color: var(--ink);
   text-decoration: none;
@@ -607,7 +621,7 @@ textarea.rf-input { min-height: 64px; padding: 10px 12px; }
   }
   .head__links { gap: 14px; }
   .head__link { font-size: 11px; letter-spacing: 0.06em; }
-  .head__title { left: calc(var(--gutter) + 16px * var(--p)); }
+  .head__title { --title-shift-x: 16px; }
   .rc { gap: 18px; }
   .rc__actions > .bi-btn--sm { padding: 0 14px; }
 }
