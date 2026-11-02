@@ -205,6 +205,16 @@ html, body { background: var(--bg-000); }
   font: 600 clamp(32px, 4.5vw, 64px)/0.9 "Chillax", var(--font-display);
   letter-spacing: -0.01em; text-transform: uppercase;
 }
+/* Create Recipe: text on desktop; on phones a 32px "+" circle with an invisible 44px tap area,
+   centred under the navbar logo (13px = logo centre 29px from the edge − half the button 16px) */
+.rs-create__icon { display: none; }
+@media (max-width: 719px) {
+  .rs-head__row { align-items: center; }
+  .rs-create { --bi-btn-h: 32px; position: relative; width: 32px; padding: 0; margin-right: 13px; }
+  .rs-create::before { content: ""; position: absolute; inset: -6px; }
+  .rs-create__icon { display: block; }
+  .rs-create__label { display: none; }
+}
 
 .recipe-grid {
   display: grid;
