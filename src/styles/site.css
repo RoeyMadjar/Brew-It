@@ -714,7 +714,8 @@ textarea.rf-input { min-height: 64px; padding: 10px 12px; }
 /* Boxed value fields (Dose, Yield, Brew time, Grind size, Temp, Rating, Tasting notes): on focus their own
    thin border lights up all the way round, instead of a second outline ring drawn outside the box */
 .rf .rf-input:focus { border-color: var(--ink); }
-.rf .rf-input:focus-visible { outline: none; }
+.rf .rf-input:focus-visible,
+.ai .ai__q:focus-visible { outline: none; }
 
 /* Autofilled inputs keep the design's colours instead of the browser's yellow/blue fill */
 .bi-input:-webkit-autofill,
