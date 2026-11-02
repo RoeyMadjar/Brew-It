@@ -25,28 +25,6 @@ import {
   versionToFormValues,
 } from "./utils/versionForm.js";
 
-const sampleRecipes = [
-  {
-    id: "recipe-1",
-    name: "Morning Coffee",
-    bean: "San Rafael",
-    method: "Espresso",
-    versions: [
-      {
-        id: "version-1",
-        createdAt: "2026-09-20T08:00:00.000Z",
-        doseGrams: 16,
-        grindSize: "fine",
-        waterTempC: 93,
-        brewTimeSeconds: 28,
-        yieldGrams: 40,
-        rating: 8,
-        tastingNotes: "Balanced, bitter notes, a bit sour, nice finish.",
-      },
-    ],
-  },
-];
-
 const emptyForm = {
   name: "",
   bean: "",
@@ -67,11 +45,11 @@ function loadRecipes() {
   try {
     const savedRecipes = localStorage.getItem(STORAGE_KEY);
     if (savedRecipes === null) {
-      return sampleRecipes;
+      return [];
     }
     return JSON.parse(savedRecipes);
   } catch {
-    return sampleRecipes;
+    return [];
   }
 }
 
