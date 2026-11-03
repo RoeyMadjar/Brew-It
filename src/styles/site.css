@@ -387,11 +387,11 @@ html, body { background: var(--bg-000); }
   .bi-btn--ai:hover::before { opacity: 1; animation: bi-ai-orbit var(--duration-ambient) linear infinite; }
   .bi-btn--ai:hover::after { opacity: 0.45; animation: bi-ai-orbit var(--duration-ambient) linear infinite; }
 }
-/* Phones and touch screens: the open-state glow stays still and has no blurred halo.
-   The spinning gradient and the blur redraw every frame and made the panel animations lag. */
+/* Phones and touch screens: the open-state glow (ring + halo) stays still.
+   Spinning redraws the gradient and the blur every frame and made the panel animations lag. */
 @media (hover: none), (pointer: coarse) {
-  .bi-btn--ai[aria-expanded="true"]::before { animation: none; }
-  .bi-btn--ai[aria-expanded="true"]::after { display: none; }
+  .bi-btn--ai[aria-expanded="true"]::before,
+  .bi-btn--ai[aria-expanded="true"]::after { animation: none; }
 }
 /* The pill keeps its plain indigo fill in every state: no hover/tap tint that could linger after a click */
 .bi-btn--ai, .bi-btn--ai:hover, .bi-btn--ai:active, .bi-btn--ai:focus { background: var(--inset-200); }
