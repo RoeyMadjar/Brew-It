@@ -111,7 +111,8 @@ html, body { background: var(--bg-000); }
     translate(calc((1 - var(--p)) * 16px), calc((1 - var(--p)) * 16px))
     scale(calc(1 + (1 - var(--p)) * 20 / 28));
   transform-origin: right center;
-  will-change: transform;
+  /* No will-change: it made the browser stretch the 28px drawing up to 48px (blurry on the landing).
+     Without it the small logo is redrawn at its real size, so it stays sharp. */
 }
 
 .head__h1 { margin: 0; font-size: 1em; }
