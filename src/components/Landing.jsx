@@ -1,5 +1,5 @@
 // First screen: tagline and links to the page's sections. The big
-// "Brew It" title lives in Header, so it can shrink into the navbar.
+// "Brew It" title and logo live in Header, next to the navbar.
 function Landing() {
   return (
     <section

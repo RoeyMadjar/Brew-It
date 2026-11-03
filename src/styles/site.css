@@ -12,8 +12,6 @@
   --page: min(calc(100% - 2 * var(--gutter)), 1312px);
   /* The landing title fills the content width; "Brew It" is ~4.3em wide */
   --hero-fs: min(calc((100vw - 2 * var(--gutter)) / 4.3), 320px);
-  /* Scroll progress 0 → 1 (landing → compact navbar). Set from JS. */
-  --p: 0;
 
   /* Cool surfaces (Version History, Ask AI, version-level inputs): Midnight Navy.
      Overrides the design system's Deep Indigo. */
@@ -32,25 +30,24 @@ html, body { background: var(--bg-000); }
   font-family: var(--font-body);
   overflow-x: clip;
 }
-.site[data-p="0"]   { --p: 0; }
-.site[data-p="0.5"] { --p: 0.5; }
-.site[data-p="1"]   { --p: 1; }
 
 .wrap { position: relative; z-index: 2; width: var(--page); margin-inline: auto; }
 /* Landing content starts at the same left edge as the big title at every width */
 .landing .wrap { margin-left: var(--gutter); margin-right: auto; }
 .sec  { position: relative; min-height: 100svh; box-sizing: border-box; }
 
-/* ---------- Header: big title → compact navbar ---------- */
+/* ---------- Header: big title on the landing, fixed navbar after it ---------- */
+/* The big title and landing logo are part of the page and scroll away with the landing */
 .head {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 60;
+  position: absolute; top: 0; left: 0; right: 0; z-index: 60;
   height: 80px;
   pointer-events: none;
 }
-.site[data-static="true"] .head { position: absolute; }
 
+/* The navbar is fixed and hidden on the landing. It fades in once the landing buttons
+   have passed under it (data-shown, set in Header.jsx) and fades out when they come back. */
 .head__bar {
-  position: absolute; z-index: 1;
+  position: fixed; z-index: 1;
   top: 12px; left: var(--gutter); right: var(--gutter);
   height: 56px;
   display: flex; align-items: center; justify-content: flex-end;
@@ -59,24 +56,25 @@ html, body { background: var(--bg-000); }
   border-radius: var(--radius-pill);
   isolation: isolate;
   pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--duration-base) var(--ease-standard), visibility 0s linear var(--duration-base);
 }
-/* The pill fades in during the last quarter of the shrink */
+.head__bar[data-shown="true"] { opacity: 1; visibility: visible; transition-delay: 0s; }
 .head__bar::before {
   content: ""; position: absolute; inset: 0; z-index: -1;
   border-radius: inherit;
   background: var(--bg-100);
   border: 1px solid var(--line-hairline);
   box-shadow: var(--shadow-edge), var(--shadow-float);
-  opacity: calc(var(--p) * 4 - 3);
 }
-.head__links {
-  display: flex; gap: clamp(16px, 2.4vw, 32px); list-style: none; margin: 0; padding: 0;
-  /* Links only exist in navbar mode: hidden on the landing, fade in with the pill */
-  opacity: calc(var(--p) * 4 - 3);
-  visibility: hidden;
+/* The small "Brew It" on the left of the navbar */
+.head__mini {
+  display: inline-flex; align-items: center; min-height: 44px; margin-right: auto;
+  font: 700 22px/0.8 "Chillax", var(--font-display); letter-spacing: -0.01em;
+  color: var(--ink); text-decoration: none;
 }
-.site[data-p="1"] .head__links,
-.site[data-compact="true"] .head__links { visibility: visible; }
+.head__links { display: flex; gap: clamp(16px, 2.4vw, 32px); list-style: none; margin: 0; padding: 0; }
 .head__link {
   display: inline-flex; align-items: center; min-height: 44px;
   position: relative;
@@ -86,7 +84,7 @@ html, body { background: var(--bg-000); }
   transition: color var(--duration-fast) var(--ease-standard);
 }
 /* Hover colour only with a real pointer; on touch it shows only while pressed, then returns */
-.head__link, .head__title, .head__logo-link { -webkit-tap-highlight-color: transparent; }
+.head__link, .head__title, .head__logo-link, .head__mini, .head__landlogo { -webkit-tap-highlight-color: transparent; }
 @media (hover: hover) { .head__link:hover { color: var(--ink); } }
 .head__link:active { color: var(--ink); }
 /* Hover: a thin line in the text colour draws in under the link */
@@ -99,36 +97,23 @@ html, body { background: var(--bg-000); }
 .head__link:hover::after, .head__link:focus-visible::after { transform: scaleX(1); }
 /* No hover line on phones or touch screens (taps would leave it stuck on) */
 @media (max-width: 719px), (hover: none) { .head__link::after { display: none; } }
-/* On the landing the logo sits a little lower and further right; it eases back into the pill as the navbar forms */
 /* The logo is a link back to the top, like the "Brew It" title */
 .head__logo-link { display: block; flex: none; border-radius: var(--radius-sm); }
 .head__logo-link:hover .head__logo { opacity: 0.85; }
-.head__logo {
-  display: block; width: auto;
-  /* 28px in the compact navbar, scaled up to 48px on the landing (a transform, so the navbar layout never changes) */
-  height: 28px;
-  transform:
-    translate(calc((1 - var(--p)) * 16px), calc((1 - var(--p)) * 16px))
-    scale(calc(1 + (1 - var(--p)) * 20 / 28));
-  transform-origin: right center;
-  /* No will-change: it made the browser stretch the 28px drawing up to 48px (blurry on the landing).
-     Without it the small logo is redrawn at its real size, so it stays sharp. */
+.head__logo { display: block; width: auto; height: 28px; }
+
+/* The big landing logo (a copy of the navbar logo that scrolls away with the page) */
+.head__landlogo {
+  display: block; position: absolute; z-index: 2; top: 32px; right: var(--gutter);
+  pointer-events: auto; border-radius: var(--radius-sm);
 }
+.head__landlogo img { display: block; height: 48px; width: auto; }
 
 .head__h1 { margin: 0; font-size: 1em; }
 .head__title {
   position: absolute; z-index: 2;
-  /* Laid out once at full size; the shrink into the navbar is a transform only
-     (no font-size / position change per frame, which lagged in Safari).
-     Compact end point: 20px right, 69px up, scaled to 22px (--title-min = 22 / full size, set in Header.jsx). */
-  --title-shift-x: 20px;
   left: var(--gutter);
   top: 100px;
-  transform:
-    translate(calc(var(--title-shift-x) * var(--p)), calc(-69px * var(--p)))
-    scale(calc(1 - (1 - var(--title-min, 1)) * var(--p)));
-  transform-origin: top left;
-  will-change: transform;
   /* Wordmark font: Chillax Bold (Fontshare). @font-face lives in Main.dc.html;
      in the app, self-host Chillax-Bold.woff2 / .woff and declare it next to tokens.css */
   font-family: "Chillax", var(--font-display);
@@ -184,10 +169,6 @@ html, body { background: var(--bg-000); }
 .landing__actions { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: center; gap: 12px; }
 .landing__actions .bi-btn-with-note { align-items: center; }
 .landing__actions .bi-btn-note { padding-left: 0; }
-
-/* Static "scrolled" frames */
-.site[data-scene="nav"][data-p="1"] .landing   { margin-top: -60svh; }
-.site[data-scene="nav"][data-p="0.5"] .landing { margin-top: -25svh; }
 
 /* ---------- Recipes ---------- */
 .sec--recipes {
@@ -630,20 +611,10 @@ textarea.rf-input { min-height: 64px; padding: 10px 12px; }
   .head__bar { gap: 14px; padding: 0 16px; }
   /* Phones: tagline + buttons sit in the vertical middle of the space below the title */
   .landing { justify-content: center; padding-bottom: calc(100px + var(--hero-fs) * 0.8 - 16px); }
-  /* As the title shrinks, the tagline + buttons fade out and drift up slightly,
-     so they are gone before they reach the title (no overlap). Driven by --p, no extra JS. */
-  .landing__inner {
-    opacity: calc(1 - var(--p) * 1.6);
-    transform: translateY(calc(var(--p) * -24px));
-  }
   .head__links { gap: 14px; }
   .head__link { font-size: 11px; letter-spacing: 0.06em; }
-  .head__title { --title-shift-x: 16px; }
   .rc { gap: 18px; }
   .rc__actions > .bi-btn--sm { padding: 0 14px; }
-}
-@media (max-width: 719px) and (prefers-reduced-motion: reduce) {
-  .landing__inner { transform: none; }
 }
 
 /* ---------- Component stages (standalone boards) ---------- */
