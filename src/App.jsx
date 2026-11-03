@@ -484,7 +484,6 @@ function App() {
   return (
     // id="top" is the target of the navbar's "back to top" links.
     <div className="site" id="top" data-settling={isSettling}>
-      <div className="bi-grain-page" aria-hidden="true"></div>
       <Header />
       <main>
         <Landing />
